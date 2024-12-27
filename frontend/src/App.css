@@ -6,6 +6,7 @@
   width: 100vw;
   height: 100vh;
   padding-top: 15px; /* Optional: add some space between the top and navbar */
+  background-color: green;
 }
 
 .navbar {
