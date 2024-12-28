@@ -2,8 +2,9 @@ import React from 'react';
 
 function Dashboard() {
   return (
-    <div>
-      <p>Welcome to the market</p>
+    <div className='market'>
+      <div className='chart-section'></div>
+      <div className='order-section'></div>
     </div>
   );
 }
