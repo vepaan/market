@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import yfinance as yf
 from flask_cors import CORS
 
+#https://gevonrubi.medium.com/webull-a-great-looking-brokerage-app-with-plenty-of-functionality-85537f555b83
+
 app = Flask(__name__)
 CORS(app)
 
