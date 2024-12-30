@@ -6,135 +6,95 @@ import {
   LineElement,
   PointElement,
   LinearScale,
-  CategoryScale, // Register category scale for x-axis
+  CategoryScale,
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js';
 
-ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend);
-
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend, Filler);
 
 function Market() {
   const [chartData, setChartData] = useState(null);
+  const [timeRange, setTimeRange] = useState('1mo'); // Default to 1 month
+
+  const fetchStockData = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:5000/api/stock-data', {
+        params: { ticker: 'AAPL', range: timeRange },
+      });
+
+      const data = response.data;
+      const isIncreasing = data.prices[data.prices.length - 1] > data.prices[0];
+
+      setChartData({
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'AAPL Stock Price (USD)',
+            data: data.prices,
+            borderColor: isIncreasing ? '#10b981' : '#ef4444', // Line color
+            backgroundColor: (context) => {
+              const chart = context.chart;
+              const { ctx, chartArea } = chart;
+              if (!chartArea) return null;
+
+              const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+              if (isIncreasing) {
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)'); // Light green
+                gradient.addColorStop(1, 'rgba(16, 185, 129, 0)'); // Transparent
+              } else {
+                gradient.addColorStop(0, 'rgba(239, 68, 68, 0.5)'); // Light red
+                gradient.addColorStop(1, 'rgba(239, 68, 68, 0)'); // Transparent
+              }
+              return gradient;
+            },
+            fill: true,
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Error fetching stock data:', error);
+    }
+  };
 
   useEffect(() => {
-    // Mock data for AAPL stock prices (monthly intervals)
-    const fetchStockData = async () => {
-      try {
-        const response = await axios.get(
-          'https://api.example.com/aapl-stock-data', // Replace with real API endpoint
-          { params: { interval: '1mo', range: '1y' } }
-        );
-
-        //mock data
-        const data = response.data;
-
-        setChartData({
-          labels: data.labels,
-          datasets: [
-            {
-              label: 'AAPL Stock Price (USD)',
-              data: data.prices,
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.2)',
-              fill: true,
-            },
-          ],
-        });
-      } catch (error) {
-        console.error('Error fetching stock data:', error);
-      }
-    };
-
-    //hardcoded data
-    setChartData({
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      datasets: [
-        {
-          //label: 'AAPL Stock Price (USD)',
-          data: [150, 155, 160, 162, 158, 165, 170, 172, 168, 174, 180, 185],
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          fill: true,
-        },
-      ],
-    });
-
-    // fetchStockData();
-  }, []);
+    fetchStockData();
+  }, [timeRange]);
 
   return (
-    <div className='market'>
-      <div className='chart-section'>
+    <div className="market">
+      <div className="controls">
+        <button onClick={() => setTimeRange('1d')}>1 Day</button>
+        <button onClick={() => setTimeRange('5d')}>5 Days</button>
+        <button onClick={() => setTimeRange('1mo')}>1 Month</button>
+        <button onClick={() => setTimeRange('1y')}>1 Year</button>
+        <button onClick={() => setTimeRange('max')}>Max</button>
+      </div>
+      <div className="chart-section">
         {chartData ? (
           <Line
             data={chartData}
             options={{
               responsive: true,
               plugins: {
-                legend: {
-                  display: false,
-                  position: 'top',
-                },
-                title: {
-                  display: true,
-                  text: 'AAPL Stock Price (USD)',
-                },
+                legend: { display: false },
+                title: { display: true, text: 'AAPL Stock Price (USD)' },
               },
               scales: {
-                x: {
-                  title: {
-                    display: true,
-                    //text: 'Month',
-                  },
-                  grid: {
-                    display: false, // Show gridlines
-                    drawOnChartArea: true, // Toggle visibility of horizontal gridlines
-                    color: 'rgba(0, 0, 0, 0.1)', // Light gray color for lines
-                  },
-                },
-                y: {
-                  title: {
-                    display: true,
-                    //text: 'Price (USD)',
-                  },
-                  grid: {
-                    display: true, // Show gridlines
-                    drawOnChartArea: true, // Toggle visibility of horizontal gridlines
-                    color: 'rgba(0, 0, 0, 0.1)', // Light gray color for lines
-                  },
-                  beginAtZero: false,
-                },
+                x: { title: { display: true }, grid: { display: false } },
+                y: { title: { display: true }, grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' } },
               },
               elements: {
-                line: {
-                  borderWidth: 2, // Line thickness
-                  borderColor: '#3b82f6', // Line color
-                },
-                point: {
-                  radius: (ctx) => {
-                    // Show points only for the latest data point
-                    const dataIndex = ctx.dataIndex; // Index of the data point
-                    const datasetLength = ctx.dataset.data.length; // Total number of data points
-                    return dataIndex === datasetLength - 1 ? 5 : 0; // Show radius 5 for the latest, 0 for others
-                  },
-                  hoverRadius: (ctx) => {
-                    const dataIndex = ctx.dataIndex;
-                    const datasetLength = ctx.dataset.data.length;
-                    return dataIndex === datasetLength - 1 ? 7 : 0; // Show radius 7 on hover for the latest
-                  },
-                },
+                line: { borderWidth: 2 },
+                point: { radius: 0, hoverRadius: 5 },
               },
             }}
           />
         ) : (
           <p>Loading chart...</p>
         )}
-      </div>
-      <div className='order-section'>
-        <h2>Order Section</h2>
-        <p>Order details and functionalities will go here.</p>
       </div>
     </div>
   );
