@@ -65,13 +65,6 @@ function Market() {
 
   return (
     <div className="market">
-      <div className="controls">
-        <button onClick={() => setTimeRange('1d')}>1 Day</button>
-        <button onClick={() => setTimeRange('5d')}>5 Days</button>
-        <button onClick={() => setTimeRange('1mo')}>1 Month</button>
-        <button onClick={() => setTimeRange('1y')}>1 Year</button>
-        <button onClick={() => setTimeRange('max')}>Max</button>
-      </div>
       <div className="chart-section">
         {chartData ? (
           <Line
@@ -95,7 +88,15 @@ function Market() {
         ) : (
           <p>Loading chart...</p>
         )}
+        <div className='chart-button-group'>
+          <button onClick={() => setTimeRange('1d')}>1 Day</button>
+          <button onClick={() => setTimeRange('5d')}>5 Days</button>
+          <button onClick={() => setTimeRange('1mo')}>1 Month</button>
+          <button onClick={() => setTimeRange('1y')}>1 Year</button>
+          <button onClick={() => setTimeRange('max')}>Max</button>
+        </div>
       </div>
+      <div className='order-section'></div>
     </div>
   );
 }

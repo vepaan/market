@@ -66,6 +66,12 @@
   padding-right: 20px;
 }
 
+.chart-button-group{
+  width: auto;
+  height: auto;
+  margin-left: 20px;
+}
+
 .order-section{
   width: 30%;
   height: 500px;

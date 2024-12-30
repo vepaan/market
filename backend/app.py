@@ -17,7 +17,7 @@ def get_stock_data():
             '5d': '5m',  # 5-minute data for 5 days
             '1mo': '30m',  # Daily data for 1 month
             '1y': '1d',  # Daily data for 1 year
-            'max': '1d',  # Daily data for max range
+            'max': '1mo',  # Daily data for max range
         }
         interval = interval_map.get(range_period, '1d')
 
