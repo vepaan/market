@@ -77,7 +77,7 @@ function Market() {
               },
               scales: {
                 x: { title: { display: true }, grid: { display: false } },
-                y: { title: { display: true }, grid: { display: true, color: 'rgba(0, 0, 0, 0.1)' } },
+                y: { title: { display: true }, grid: { display: true, color: 'rgba(192, 190, 190, 0.1)' } },
               },
               elements: {
                 line: { borderWidth: 2 },
