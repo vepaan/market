@@ -93,7 +93,7 @@
   bottom: -5px; /* Adjust to place the underline below the text */
   left: 50%;
   transform: translateX(-50%) scaleX(0); /* Start with no underline */
-  width: 100%; /* Full width of the button */
+  width: 35px;
   height: 4px; /* Height of the underline */
   background-color: #10b981;
   border-radius: 10px;
