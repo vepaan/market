@@ -28,6 +28,11 @@ def get_stock_data():
         history = stock.history(period=range_period, interval=interval)
 
         labels = history.index.strftime('%H:%M' if interval in ['1m', '5m'] else '%b %d').tolist()
+        if interval == '1d':
+            labels = history.index.strftime('%b').tolist()
+        elif interval == '1mo':
+            labels = history.index.strftime('%y').tolist()
+
         prices = history['Close'].tolist()
 
         return jsonify({

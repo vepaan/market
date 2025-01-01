@@ -66,6 +66,41 @@ function Market() {
   return (
     <div className="market">
       <div className="chart-section">
+        <div className="chart-header">
+          <h2>Apple Inc (AAPL)</h2>
+          {chartData && (
+            <>
+              <h3 className="current-price">
+                ${chartData.datasets[0].data.at(-1).toFixed(2)} {/* Last point as current price */}
+              </h3>
+              <p
+                className="percent-change"
+                style={{
+                  color: chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0]
+                    ? '#10b981'
+                    : '#ef4444',
+                }}
+              >
+                {/* Calculate price change */}
+                {chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0] ? '+' : ''}
+                {(
+                  chartData.datasets[0].data.at(-1) - chartData.datasets[0].data[0]
+                ).toFixed(2)}{' '}USD{' '}
+                
+                <span style={{ color: 'white' }}>
+                  (
+                  {chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0] ? '+' : ''}
+                  {(
+                    ((chartData.datasets[0].data.at(-1) - chartData.datasets[0].data[0]) /
+                      chartData.datasets[0].data[0]) *
+                    100
+                  ).toFixed(2)}
+                  %)
+                </span>
+              </p>
+            </>
+          )}
+        </div>
         {chartData ? (
           <Line
             data={chartData}
@@ -73,7 +108,7 @@ function Market() {
               responsive: true,
               plugins: {
                 legend: { display: false },
-                title: { display: true, text: 'AAPL Stock Price (USD)' },
+                title: { display: true },
               },
               scales: {
                 x: { title: { display: true }, grid: { display: false } },
@@ -88,7 +123,7 @@ function Market() {
         ) : (
           <p>Loading chart...</p>
         )}
-        <div className='chart-button-group'>
+        <div className="chart-button-group">
           <button onClick={() => setTimeRange('1d')}>1 Day</button>
           <button onClick={() => setTimeRange('5d')}>5 Days</button>
           <button onClick={() => setTimeRange('1mo')}>1 Month</button>
@@ -96,7 +131,7 @@ function Market() {
           <button onClick={() => setTimeRange('max')}>Max</button>
         </div>
       </div>
-      <div className='order-section'></div>
+      <div className="order-section">This is the order section</div>
     </div>
   );
 }
