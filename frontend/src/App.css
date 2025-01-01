@@ -149,3 +149,13 @@
 .percent-change{
   color: white;
 }
+
+.search-bar-box{
+  padding-left: 30px;
+  margin-top: 20px;
+}
+
+.search-bar{
+  border-radius: 3px;
+  background-color: rgb(221, 221, 221);
+}

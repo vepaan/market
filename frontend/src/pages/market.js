@@ -17,23 +17,35 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, T
 
 function Market() {
   const [chartData, setChartData] = useState(null);
+  const [companyName, setCompanyName] = useState('');
+  const [ticker, setTicker] = useState('AAPL'); // Default ticker
   const [timeRange, setTimeRange] = useState('1mo'); // Default to 1 month
   const [activeButton, setActiveButton] = useState('1mo'); // Default active button
+  const [name, setName] = useState(''); // State for the ticker input
 
+  // Function to fetch stock data
   const fetchStockData = async () => {
     try {
+      // Fetch stock data and company name from backend
       const response = await axios.get('http://127.0.0.1:5000/api/stock-data', {
-        params: { ticker: 'AAPL', range: timeRange },
+        params: { ticker, range: timeRange },
       });
 
       const data = response.data;
       const isIncreasing = data.prices[data.prices.length - 1] > data.prices[0];
 
+      // Fetch company name using Yahoo Finance API
+      const companyResponse = await axios.get('http://127.0.0.1:5000/api/company-name', {
+        params: { ticker },
+      });
+      setCompanyName(companyResponse.data.companyName);
+
+      // Update the chart data state
       setChartData({
         labels: data.labels,
         datasets: [
           {
-            label: 'AAPL Stock Price (USD)',
+            label: `${ticker} Stock Price (USD)`,
             data: data.prices,
             borderColor: isIncreasing ? '#10b981' : '#ef4444', // Line color
             backgroundColor: (context) => {
@@ -60,20 +72,27 @@ function Market() {
     }
   };
 
+  // Fetch data whenever the ticker or time range changes
   useEffect(() => {
     fetchStockData();
-  }, [timeRange]);
+  }, [ticker, timeRange]);
 
+  // Button click handler for time range
   const handleButtonClick = (range) => {
     setActiveButton(range); // Update the active button
     setTimeRange(range); // Update the time range for fetching data
+  };
+
+  // Handle ticker change when input field is updated
+  const handleTickerChange = () => {
+    setTicker(name.toUpperCase()); // Set ticker from input value
   };
 
   return (
     <div className="market">
       <div className="chart-section">
         <div className="chart-header">
-          <h2>Apple Inc (AAPL)</h2>
+          <h2>{companyName ? `${companyName} (${ticker})` : `Loading...`}</h2>
           {chartData && (
             <>
               <h3 className="current-price">
@@ -139,6 +158,16 @@ function Market() {
               {range.toUpperCase()}
             </button>
           ))}
+        </div>
+        <div className="search-bar-box">
+          <input
+            onChange={(e) => setName(e.target.value)}
+            value={name}
+            type="text"
+            className="search-bar"
+            placeholder="Enter ticker..."
+          />
+          <button onClick={handleTickerChange}>Search</button>
         </div>
       </div>
       <div className="order-section">This is the order section</div>

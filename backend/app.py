@@ -2,8 +2,6 @@ from flask import Flask, request, jsonify
 import yfinance as yf
 from flask_cors import CORS
 
-#https://gevonrubi.medium.com/webull-a-great-looking-brokerage-app-with-plenty-of-functionality-85537f555b83
-
 app = Flask(__name__)
 CORS(app)
 
@@ -43,6 +41,15 @@ def get_stock_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/company-name', methods=['GET'])
+def get_company_name():
+    try:
+        ticker = request.args.get('ticker', default='AAPL', type=str)
+        stock = yf.Ticker(ticker)
+        company_name = stock.info.get('longName', 'N/A')  # Default to 'N/A' if name not found
+        return jsonify({'companyName': company_name})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
