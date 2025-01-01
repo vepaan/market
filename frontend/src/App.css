@@ -37,7 +37,7 @@
 
 .content {
   width: 100%;
-  background-color: red;
+  background-color: black;
   flex-grow: 1; /* Make the content area flexible to fill the remaining space */
   display: flex;
   justify-content: center; /* Center the content horizontally */
@@ -69,9 +69,41 @@
 .chart-button-group{
   width: auto;
   height: auto;
-  margin-left: 20px;
+  margin-left: 40px;
   background-color: black;
 }
+
+.buttons {
+  margin-right: 15px;
+  color: white;
+  background-color: black;
+  border: none;
+  position: relative;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+.buttons.active {
+  color: #10b981;
+}
+
+.buttons::after {
+  content: '';
+  position: absolute;
+  bottom: -5px; /* Adjust to place the underline below the text */
+  left: 50%;
+  transform: translateX(-50%) scaleX(0); /* Start with no underline */
+  width: 100%; /* Full width of the button */
+  height: 4px; /* Height of the underline */
+  background-color: #10b981;
+  border-radius: 10px;
+  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out; /* Smooth transition */
+}
+
+.buttons.active::after {
+  transform: translateX(-50%) scaleX(1); /* Expand underline */
+}
+
 
 .order-section{
   width: 30%;

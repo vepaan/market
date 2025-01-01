@@ -18,6 +18,7 @@ ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, T
 function Market() {
   const [chartData, setChartData] = useState(null);
   const [timeRange, setTimeRange] = useState('1mo'); // Default to 1 month
+  const [activeButton, setActiveButton] = useState('1mo'); // Default active button
 
   const fetchStockData = async () => {
     try {
@@ -63,6 +64,11 @@ function Market() {
     fetchStockData();
   }, [timeRange]);
 
+  const handleButtonClick = (range) => {
+    setActiveButton(range); // Update the active button
+    setTimeRange(range); // Update the time range for fetching data
+  };
+
   return (
     <div className="market">
       <div className="chart-section">
@@ -85,8 +91,8 @@ function Market() {
                 {chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0] ? '+' : ''}
                 {(
                   chartData.datasets[0].data.at(-1) - chartData.datasets[0].data[0]
-                ).toFixed(2)}{' '}USD{' '}
-                
+                ).toFixed(2)}{' '}
+                USD{' '}
                 <span style={{ color: 'white' }}>
                   (
                   {chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0] ? '+' : ''}
@@ -124,11 +130,15 @@ function Market() {
           <p>Loading chart...</p>
         )}
         <div className="chart-button-group">
-          <button onClick={() => setTimeRange('1d')}>1 Day</button>
-          <button onClick={() => setTimeRange('5d')}>5 Days</button>
-          <button onClick={() => setTimeRange('1mo')}>1 Month</button>
-          <button onClick={() => setTimeRange('1y')}>1 Year</button>
-          <button onClick={() => setTimeRange('max')}>Max</button>
+          {['1d', '5d', '1mo', '1y', 'max'].map((range) => (
+            <button
+              key={range}
+              onClick={() => handleButtonClick(range)}
+              className={`buttons ${activeButton === range ? 'active' : ''}`}
+            >
+              {range.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
       <div className="order-section">This is the order section</div>
