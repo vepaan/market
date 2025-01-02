@@ -108,7 +108,7 @@
 
 .order-section{
   width: 35%;
-  height: 500px;
+  height: 550px;
   /*outline: solid 1px white;*/
   position: relative;
   top: 40px;
@@ -180,7 +180,7 @@
 .bid-ask{
   background-color: rgb(14, 13, 19);
   outline: solid 1px rgb(53, 53, 53);
-  height: 32%;
+  height: 175px;
   width: 90%;
   position: relative;
   border-radius: 2px;
@@ -188,8 +188,8 @@
 
 .bid-ask-title{
   color: white;
-  margin-top: 2%;
-  margin-bottom: 2%;
+  margin-top: 10px;
+  margin-bottom: 10px;
   font-size: x-large;
   font-weight: bold;
   align-self: flex-start;
@@ -198,19 +198,19 @@
 
 .place-order-title{
   color: white;
-  margin-top: 3%;
-  margin-bottom: 2%;
+  margin-top: 25px;
+  margin-bottom: 10px;
   font-size: x-large;
   font-weight: bold;
   align-self: flex-start;
   margin-left: 6%;
 }
 
-.order-form{
+.order-form {
   background-color: rgb(14, 13, 19);
   outline: solid 1px rgb(53, 53, 53);
-  height: 40%;
   width: 90%;
   position: relative;
   border-radius: 2px;
+  height: 225px;
 }
