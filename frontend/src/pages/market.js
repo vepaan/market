@@ -170,7 +170,13 @@ function Market() {
           <button onClick={handleTickerChange}>Search</button>
         </div>
       </div>
-      <div className="order-section">This is the order section</div>
+      <div className="order-section">
+        <div className='bid-ask-title'>Market</div>
+        <div className='bid-ask'>
+        </div>
+        <div className='place-order-title'>Place Order</div>
+        <div className='order-form'></div>
+      </div>
     </div>
   );
 }
