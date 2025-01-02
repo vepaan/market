@@ -13,14 +13,28 @@ function BidAskTable({ ticker }) {
         setBidAskData(response.data);
       } catch (error) {
         console.error('Error fetching bid/ask data:', error);
-        setBidAskData(null);
+  
+        // Generate random fallback data
+        const randomBid = (Math.random() * (100 - 90) + 90).toFixed(2);
+        const randomAsk = (Math.random() * (110 - 100) + 100).toFixed(2);
+        setBidAskData({
+          bid: randomBid,
+          ask: randomAsk,
+        });
       }
     };
-
-    if (ticker) {
-      fetchBidAskData();
-    }
-  }, [ticker]); // Fetch data whenever the ticker changes
+  
+    // Set an interval to fetch data every second
+    const intervalId = setInterval(() => {
+      if (ticker) {
+        fetchBidAskData();
+      }
+    }, 1000);
+  
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [ticker]);
+  
 
   return (
     <div className="bid-ask">

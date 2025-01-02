@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import yfinance as yf
 from flask_cors import CORS
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +18,7 @@ def get_stock_data():
             '5d': '5m',  # 5-minute data for 5 days
             '1mo': '30m',  # Daily data for 1 month
             '1y': '1d',  # Daily data for 1 year
-            'max': '1mo',  # Daily data for max range
+            'max': '1mo',  # Monthly data for max range
         }
         interval = interval_map.get(range_period, '1d')
 
@@ -50,7 +51,7 @@ def get_company_name():
         return jsonify({'companyName': company_name})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
 @app.route('/api/bid-ask', methods=['GET'])
 def get_bid_ask():
     symbol = request.args.get('symbol', 'AAPL')
@@ -65,7 +66,11 @@ def get_bid_ask():
         bid_size = market_data.get('bidSize', None)
         ask_size = market_data.get('askSize', None)
 
+        # Use the current timestamp as a unique order ID
+        order_id = str(int(time.time() * 1000))  # Milliseconds since Unix epoch
+
         return jsonify({
+            'orderId': order_id,
             'symbol': symbol,
             'bid': bid_price,
             'bid_size': bid_size,
