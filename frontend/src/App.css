@@ -177,15 +177,6 @@
   background-color: rgb(221, 221, 221);
 }
 
-.bid-ask{
-  background-color: rgb(14, 13, 19);
-  outline: solid 1px rgb(53, 53, 53);
-  height: 175px;
-  width: 90%;
-  position: relative;
-  border-radius: 2px;
-}
-
 .bid-ask-title{
   color: white;
   margin-top: 10px;
@@ -213,4 +204,43 @@
   position: relative;
   border-radius: 2px;
   height: 225px;
+}
+
+.bid-ask {
+  background-color: rgb(14, 13, 19);
+  outline: solid 1px rgb(53, 53, 53);
+  height: 175px; /* Fixed height */
+  width: 90%;
+  position: relative;
+  border-radius: 2px;
+  overflow-y: auto; /* Make the content scrollable */
+  padding: 10px;
+  box-sizing: border-box; /* Ensure padding doesn't affect dimensions */
+}
+
+.bid-ask table {
+  width: 100%;
+  border-collapse: collapse; /* Ensure no extra spacing between table cells */
+}
+
+.bid-ask th, .bid-ask td {
+  text-align: center;
+  padding: 5px;
+  border-bottom: 1px solid rgb(53, 53, 53);
+  color: white;
+}
+
+.bid-ask th {
+  position: sticky;
+  top: 0; /* Lock the header row */
+  background-color: rgb(20, 20, 30); /* Slightly different background for the header */
+  z-index: 1; /* Ensure it stays on top */
+}
+
+.bid-ask tr:nth-child(even) {
+  background-color: rgb(30, 30, 40); /* Alternating row colors */
+}
+
+.bid-ask tr:nth-child(odd) {
+  background-color: rgb(14, 13, 19);
 }

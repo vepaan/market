@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
+import BidAskTable from './bidask';
 import {
   Chart as ChartJS,
   LineElement,
@@ -172,8 +173,7 @@ function Market() {
       </div>
       <div className="order-section">
         <div className='bid-ask-title'>Market</div>
-        <div className='bid-ask'>
-        </div>
+        <BidAskTable className='bid-ask'/>
         <div className='place-order-title'>Place Order</div>
         <div className='order-form'></div>
       </div>
