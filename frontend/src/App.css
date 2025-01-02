@@ -56,7 +56,7 @@
 }
 
 .chart-section{
-  width: 700px;
+  width: 45%;
   height: 500px;
   outline: solid 1px black;
   position: relative;
@@ -107,7 +107,7 @@
 
 
 .order-section{
-  width: 520px;
+  width: 35%;
   height: 500px;
   /*outline: solid 1px white;*/
   position: relative;
