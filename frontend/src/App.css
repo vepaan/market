@@ -106,12 +106,12 @@
 
 
 .order-section{
-  width: 30%;
+  width: 450px;
   height: 500px;
-  outline: solid 1px black;
+  outline: solid 1px white;
   position: relative;
   top: 40px;
-  margin-right: 100px;
+  margin-right: 150px;
   margin-left: auto;
 }
 
