@@ -50,6 +50,31 @@ def get_company_name():
         return jsonify({'companyName': company_name})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/bid-ask', methods=['GET'])
+def get_bid_ask():
+    symbol = request.args.get('symbol', 'AAPL')
+
+    try:
+        stock = yf.Ticker(symbol)
+        market_data = stock.info
+
+        bid_price = market_data.get('bid', None)
+        ask_price = market_data.get('ask', None)
+
+        bid_size = market_data.get('bidSize', None)
+        ask_size = market_data.get('askSize', None)
+
+        return jsonify({
+            'symbol': symbol,
+            'bid': bid_price,
+            'bid_size': bid_size,
+            'ask': ask_price,
+            'ask_size': ask_size
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,47 +1,53 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const BidAskTable = () => {
-  const [data, setData] = useState([]);
+function BidAskTable({ ticker }) {
+  const [bidAskData, setBidAskData] = useState(null);
 
   useEffect(() => {
-    // Simulated data fetching
-    const interval = setInterval(() => {
-      const simulatedData = Array.from({ length: 10 }, () => ({
-        bidQty: Math.floor(Math.random() * 100),
-        bidPrice: (Math.random() * 100).toFixed(2),
-        askPrice: (Math.random() * 100).toFixed(2),
-        askQty: Math.floor(Math.random() * 100),
-      }));
-      setData(simulatedData);
-    }, 1000);
+    const fetchBidAskData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:5000/api/bid-ask', {
+          params: { symbol: ticker },
+        });
+        setBidAskData(response.data);
+      } catch (error) {
+        console.error('Error fetching bid/ask data:', error);
+        setBidAskData(null);
+      }
+    };
 
-    return () => clearInterval(interval); // Cleanup interval on unmount
-  }, []);
+    if (ticker) {
+      fetchBidAskData();
+    }
+  }, [ticker]); // Fetch data whenever the ticker changes
 
   return (
     <div className="bid-ask">
-      <table>
-        <thead>
-          <tr>
-            <th>Qty</th>
-            <th>Bid</th>
-            <th>Ask</th>
-            <th>Qty</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, index) => (
-            <tr key={index}>
-              <td>{row.bidQty}</td>
-              <td>{row.bidPrice}</td>
-              <td>{row.askPrice}</td>
-              <td>{row.askQty}</td>
+      {bidAskData ? (
+        <table>
+          <thead>
+            <tr>
+              <th>Qty</th>
+              <th>Bid</th>
+              <th>Ask</th>
+              <th>Qty</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <tr>   
+              <td>{bidAskData.bid_size || 'N/A'}</td>
+              <td>{bidAskData.bid || 'N/A'}</td>
+              <td>{bidAskData.ask || 'N/A'}</td>
+              <td>{bidAskData.ask_size || 'N/A'}</td>
+            </tr>
+          </tbody>
+        </table>
+      ) : (
+        <p>Loading bid/ask data...</p>
+      )}
     </div>
   );
-};
+}
 
 export default BidAskTable;
