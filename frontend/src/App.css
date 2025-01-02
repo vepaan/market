@@ -52,6 +52,7 @@
   width: 100vw;
   height: 100%;
   overflow: hidden;
+  overflow-y: scroll;
 }
 
 .chart-section{
@@ -60,7 +61,7 @@
   outline: solid 1px black;
   position: relative;
   top: 40px;
-  margin-left: 100px;
+  margin-left: 6vw;
   background-color: black;
   padding-left: 0px;
   padding-right: 20px;
@@ -106,19 +107,30 @@
 
 
 .order-section{
-  width: 450px;
+  width: 520px;
   height: 500px;
-  outline: solid 1px white;
+  /*outline: solid 1px white;*/
   position: relative;
   top: 40px;
-  margin-right: 150px;
+  margin-right: 8vw;
   margin-left: auto;
+  background-color: gray;
 }
 
 @media (max-width: 768px) {
   .chart-section {
-    width: 100%;
+    width: 90%;
     height: 100%;
+    margin: 20px auto;
+  }
+  .market{
+    flex-direction: column;
+    align-items: center;
+  }
+  .order-section{
+    width: 90%;
+    top: 20px;
+    margin: 20px auto;
   }
 }
 
