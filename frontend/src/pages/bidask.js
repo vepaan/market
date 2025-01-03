@@ -57,7 +57,7 @@ function BidAskTable({ ticker }) {
       if (ticker) {
         fetchBidAskData();
       }
-    }, 1000);
+    }, 5000);
 
     // Cleanup interval on component unmount or ticker change
     return () => {
