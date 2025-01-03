@@ -2,9 +2,15 @@ from flask import Flask, request, jsonify
 import yfinance as yf
 from flask_cors import CORS
 import time
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+ALPHA_VANTAGE_API = os.getenv('ALPHA_VANTAGE_API')
 
 @app.route('/api/stock-data', methods=['GET'])
 def get_stock_data():
