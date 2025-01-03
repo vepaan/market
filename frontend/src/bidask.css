@@ -1,0 +1,45 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; /* Solid background color */
+    z-index: 1;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  tbody td {
+    padding: 10px;
+  }
+  
+  .green-text {
+    color: #10b981;
+    font-weight: bold;
+  }
+  
+  .red-text {
+    color: #ef4444;
+    font-weight: bold;
+  }
+  
+  /* Modern scrollbar */
+  .bid-ask::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  .bid-ask::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .bid-ask::-webkit-scrollbar-thumb {
+    background: rgb(37, 32, 65);
+    border-radius: 5px;
+  }
+  
+  .bid-ask::-webkit-scrollbar-thumb:hover {
+    background: #0047ab;
+  }

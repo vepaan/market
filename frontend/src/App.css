@@ -227,7 +227,6 @@
   text-align: center;
   padding: 5px;
   border-bottom: 1px solid rgb(53, 53, 53);
-  color: white;
 }
 
 .bid-ask th {
@@ -244,3 +243,4 @@
 .bid-ask tr:nth-child(odd) {
   background-color: rgb(14, 13, 19);
 }
+
