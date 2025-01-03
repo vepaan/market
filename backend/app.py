@@ -4,13 +4,15 @@ from flask_cors import CORS
 import time
 import os
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-ALPHA_VANTAGE_API = os.getenv('ALPHA_VANTAGE_API')
+ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API')
+ALPHA_VANTAGE_URL = 'https://www.alphavantage.co/query'
 
 @app.route('/api/stock-data', methods=['GET'])
 def get_stock_data():
@@ -63,17 +65,24 @@ def get_bid_ask():
     symbol = request.args.get('symbol', 'AAPL')
 
     try:
-        stock = yf.Ticker(symbol)
-        market_data = stock.info
+        # Fetch real-time data from Alpha Vantage
+        params = {
+            'function': 'GLOBAL_QUOTE',
+            'symbol': symbol,
+            'apikey': ALPHA_VANTAGE_API_KEY,
+        }
+        response = requests.get(ALPHA_VANTAGE_URL, params=params)
+        data = response.json()
 
-        bid_price = market_data.get('bid', None)
-        ask_price = market_data.get('ask', None)
+        # Parse the response to extract bid and ask prices
+        global_quote = data.get('Global Quote', {})
+        bid_price = global_quote.get('05. price')  # Use appropriate keys from the API response
+        ask_price = global_quote.get('08. ask price')  # Example key, adjust if needed
+        bid_size = global_quote.get('06. bid size', None)  # Adjust based on the response structure
+        ask_size = global_quote.get('09. ask size', None)
 
-        bid_size = market_data.get('bidSize', None)
-        ask_size = market_data.get('askSize', None)
-
-        # Use the current timestamp as a unique order ID hah
-        order_id = str(int(time.time() * 1000))  # Milliseconds since Unix epoch
+        # Generate a unique order ID using the current timestamp
+        order_id = str(int(time.time() * 1000))
 
         return jsonify({
             'orderId': order_id,
@@ -86,6 +95,7 @@ def get_bid_ask():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
