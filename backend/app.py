@@ -66,8 +66,7 @@ def get_bid_ask():
         bid_size = market_data.get('bidSize', None)
         ask_size = market_data.get('askSize', None)
 
-        # Use the current timestamp as a unique order ID hah
-        order_id = str(int(time.time() * 1000))  # Milliseconds since Unix epoch
+        order_id = str(int(time.time() * 1000))
 
         return jsonify({
             'orderId': order_id,
