@@ -150,7 +150,7 @@ function Market() {
           <p>Loading chart...</p>
         )}
         <div className="chart-button-group">
-          {['1d', '5d', '1mo', '1y', 'max'].map((range) => (
+          {['5m', '1d', '5d', '1mo', '1y', 'max'].map((range) => (
             <button
               key={range}
               onClick={() => handleButtonClick(range)}
