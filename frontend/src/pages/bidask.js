@@ -5,6 +5,7 @@ import '../bidask.css'; // Import custom styles
 function BidAskTable({ ticker }) {
   const [orders, setOrders] = useState([]); // Stores unique orders
   const [orderIds, setOrderIds] = useState(new Set()); // Tracks unique order IDs
+  const MAX_ORDERS = 10; // Maximum number of orders to display
 
   useEffect(() => {
     // Cleanup orders and orderIds whenever ticker changes
@@ -25,10 +26,22 @@ function BidAskTable({ ticker }) {
           ask_size: response.data.ask_size,
         };
 
-        // If the orderId is unique, add it to the orders
         if (!orderIds.has(newOrder.orderId)) {
-          setOrders((prevOrders) => [...prevOrders, newOrder]);
-          setOrderIds((prevIds) => new Set(prevIds).add(newOrder.orderId));
+          setOrders((prevOrders) => {
+            const updatedOrders = [...prevOrders, newOrder];
+            if (updatedOrders.length > MAX_ORDERS) {
+              updatedOrders.shift(); // Remove the first (oldest) entry
+            }
+            return updatedOrders;
+          });
+
+          setOrderIds((prevIds) => {
+            const updatedIds = new Set(prevIds).add(newOrder.orderId);
+            if (updatedIds.size > MAX_ORDERS) {
+              updatedIds.delete([...updatedIds][0]); // Remove the first (oldest) ID
+            }
+            return updatedIds;
+          });
         }
       } catch (error) {
         console.error('Error fetching bid/ask data:', error);
@@ -57,7 +70,7 @@ function BidAskTable({ ticker }) {
       if (ticker) {
         fetchBidAskData();
       }
-    }, 5000);
+    }, 2000);
 
     // Cleanup interval on component unmount or ticker change
     return () => {

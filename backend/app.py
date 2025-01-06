@@ -86,9 +86,9 @@ def get_bid_ask():
         ask_price += random.uniform(-0.01, 1.365)
 
         def generate_volume():
-            if random.random() < 0.85:  # 85% chance for smaller volumes
+            if random.random() <= 0.85:  # 85% chance for smaller volumes
                 return random.randint(10, 300)
-            else:  # 20% chance for larger volumes
+            else:  # 15% chance for larger volumes
                 return random.randint(300, 5000)
 
         bid_size = generate_volume()
