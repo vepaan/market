@@ -1,16 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import '../bidask.css'; // Import custom styles
 
 function BidAskTable({ ticker, price }) {
-  const [orders, setOrders] = useState([]);
-  const [orderIds, setOrderIds] = useState(new Set());
+  const [orders, setOrders] = useState([]); // Store previous orders
+  const [orderIds, setOrderIds] = useState(new Set()); // Ensure uniqueness of orders
   const MAX_ORDERS = 10;
+  
+  // Track the previous ticker to check for changes
+  const prevTickerRef = useRef();
+
+  // Check if ticker has changed
+  useEffect(() => {
+    if (prevTickerRef.current !== ticker) {
+      // Clear orders and orderIds when the ticker changes
+      setOrders([]);
+      setOrderIds(new Set());
+    }
+    prevTickerRef.current = ticker; // Update the previous ticker value
+
+  }, [ticker]); // This will run when the ticker changes
 
   useEffect(() => {
-    setOrders([]);
-    setOrderIds(new Set());
-
     const fetchBidAskData = async () => {
       try {
         const response = await axios.get('http://127.0.0.1:5000/api/bid-ask', {
@@ -18,18 +29,19 @@ function BidAskTable({ ticker, price }) {
         });
 
         const newOrder = {
-          orderId: `${ticker}-${Date.now()}`,
+          orderId: `${ticker}-${Date.now()}`, // Unique ID for each order
           bid: response.data.bid,
           ask: response.data.ask,
           bid_size: response.data.bid_size,
           ask_size: response.data.ask_size,
         };
 
+        // Only add new orders that are not already in the orderIds set
         if (!orderIds.has(newOrder.orderId)) {
           setOrders((prevOrders) => {
             const updatedOrders = [...prevOrders, newOrder];
             if (updatedOrders.length > MAX_ORDERS) {
-              updatedOrders.shift();
+              updatedOrders.shift(); // Remove the oldest entry if over the max limit
             }
             return updatedOrders;
           });
@@ -37,7 +49,7 @@ function BidAskTable({ ticker, price }) {
           setOrderIds((prevIds) => {
             const updatedIds = new Set(prevIds).add(newOrder.orderId);
             if (updatedIds.size > MAX_ORDERS) {
-              updatedIds.delete([...updatedIds][0]);
+              updatedIds.delete([...updatedIds][0]); // Remove the oldest order ID if over the max limit
             }
             return updatedIds;
           });
@@ -54,9 +66,9 @@ function BidAskTable({ ticker, price }) {
     }, 2000);
 
     return () => {
-      clearInterval(intervalId);
+      clearInterval(intervalId); // Cleanup interval when component unmounts
     };
-  }, [ticker, price]);
+  }, [ticker, price]); // Only re-run effect when ticker or price changes
 
   return (
     <div className="bid-ask">

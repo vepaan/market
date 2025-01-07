@@ -1,20 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import LineChart from './chart'; // Import the new LineChart component
 import axios from 'axios';
 import BidAskTable from './bidask';
-import {
-  Chart as ChartJS,
-  LineElement,
-  PointElement,
-  LinearScale,
-  CategoryScale,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-
-ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend, Filler);
 
 function Market() {
   const [chartData, setChartData] = useState(null);
@@ -23,6 +10,7 @@ function Market() {
   const [timeRange, setTimeRange] = useState('1mo'); // Default to 1 month
   const [activeButton, setActiveButton] = useState('1mo'); // Default active button
   const [name, setName] = useState(''); // State for the ticker input
+  const [currentPrice, setCurrentPrice] = useState(null); // Track the current price
 
   // Function to fetch stock data
   const fetchStockData = async () => {
@@ -56,6 +44,9 @@ function Market() {
             },
           ],
         });
+
+        // Set the last price as the current price from simulated data
+        setCurrentPrice(simulatedPrices[simulatedPrices.length - 1]);
       } else {
         // Fetch stock data and company name for other time ranges
         const response = await axios.get('http://127.0.0.1:5000/api/stock-data', {
@@ -96,6 +87,9 @@ function Market() {
             },
           ],
         });
+
+        // Set the last price as the current price from stock data
+        setCurrentPrice(data.prices[data.prices.length - 1]);
       }
     } catch (error) {
       console.error('Error fetching stock data:', error);
@@ -127,7 +121,7 @@ function Market() {
       <div className="chart-section">
         <div className="chart-header">
           <h2>{companyName ? `${companyName} (${ticker})` : `Loading...`}</h2>
-          {chartData && (
+          {chartData && chartData.datasets ? (
             <>
               <h3 className="current-price">
                 ${chartData.datasets[0].data.at(-1).toFixed(2)} {/* Last point as current price */}
@@ -157,27 +151,12 @@ function Market() {
                 </span>
               </p>
             </>
+          ) : (
+            <p>Loading chart...</p>
           )}
         </div>
         {chartData ? (
-          <Line
-            data={chartData}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-                title: { display: true },
-              },
-              scales: {
-                x: { title: { display: true }, grid: { display: false } },
-                y: { title: { display: true }, grid: { display: true, color: 'rgba(192, 190, 190, 0.1)' } },
-              },
-              elements: {
-                line: { borderWidth: 2 },
-                point: { radius: 0, hoverRadius: 5 },
-              },
-            }}
-          />
+          <LineChart chartData={chartData} />
         ) : (
           <p>Loading chart...</p>
         )}
@@ -205,7 +184,7 @@ function Market() {
       </div>
       <div className="order-section">
         <div className='bid-ask-title'>Market</div>
-        <BidAskTable ticker={ticker} price={chartData.datasets[0].data.at(-1)} className='bid-ask'/>
+        <BidAskTable ticker={ticker} price={currentPrice} className='bid-ask'/>
         <div className='place-order-title'>Place Order</div>
         <div className='order-form'></div>
       </div>
