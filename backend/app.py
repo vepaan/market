@@ -58,19 +58,19 @@ def get_company_name():
 @app.route('/api/bid-ask', methods=['GET'])
 def get_bid_ask():
     symbol = request.args.get('symbol', 'AAPL')
+    price = request.args.get('price', type=float)  # Accept `price` as a query parameter
 
     try:
-        stock = yf.Ticker(symbol)
-        market_data = stock.info
+        if price is None:
+            raise ValueError("Price parameter is required.")
 
-        current_price = market_data.get('currentPrice', None)
-        volume = market_data.get('volume', None)
+        current_price = price
 
-        if current_price is None or volume is None:
-            raise ValueError("Insufficient data to calculate bid/ask spreads.")
-        
-        base_spread_min = 0.001  # 0.1% of price the stable markets
-        base_spread_max = 0.02   # 2% of price highly unstable markets
+        # Generate volume (you can replace this with your actual logic)
+        volume = random.randint(1_000_000, 10_000_000)
+
+        base_spread_min = 0.001  # 0.1% of price for stable markets
+        base_spread_max = 0.02   # 2% of price for highly unstable markets
         volume_normalizer = 1e6
 
         normalized_volume = volume / volume_normalizer
@@ -100,9 +100,9 @@ def get_bid_ask():
         return jsonify({
             'orderId': order_id,
             'symbol': symbol,
-            'bid': round(bid_price,2),
+            'bid': round(bid_price, 2),
             'bid_size': bid_size,
-            'ask': round(ask_price,2),
+            'ask': round(ask_price, 2),
             'ask_size': ask_size
         })
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
-import BidAskTable from './bidask';
 import {
   Chart as ChartJS,
   LineElement,
@@ -16,7 +15,7 @@ import {
 
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend, Filler);
 
-function Market() {
+function Chart() {
   const [chartData, setChartData] = useState(null);
   const [companyName, setCompanyName] = useState('');
   const [ticker, setTicker] = useState('AAPL'); // Default ticker
@@ -203,14 +202,8 @@ function Market() {
           <button onClick={handleTickerChange}>Search</button>
         </div>
       </div>
-      <div className="order-section">
-        <div className='bid-ask-title'>Market</div>
-        <BidAskTable ticker={ticker} price={chartData.datasets[0].data.at(-1)} className='bid-ask'/>
-        <div className='place-order-title'>Place Order</div>
-        <div className='order-form'></div>
-      </div>
     </div>
   );
 }
 
-export default Market;
+export default Chart;
