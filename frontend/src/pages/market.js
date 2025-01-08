@@ -186,7 +186,7 @@ function Market() {
         <div className='bid-ask-title'>Market</div>
         <BidAskTable ticker={ticker} price={currentPrice} className='bid-ask'/>
         <div className='place-order-title'>Place Order</div>
-        <div className='order-form'></div>
+        <div className='order-form'>Haha</div>
       </div>
     </div>
   );
