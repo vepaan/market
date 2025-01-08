@@ -131,7 +131,7 @@ def simulate_stock_price():
             raise ValueError("No historical data available.")
 
         current_price = hist['Close'].iloc[-1]
-        mu = hist['Close'].mean()  # Mean price over the period
+        mu = hist['Close'].mean()  # Mean price over the period of the stock
         sigma = calculate_historical_volatility(hist['Close'])
 
         # Ornstein-Uhlenbeck simulation
