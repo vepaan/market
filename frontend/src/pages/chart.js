@@ -11,7 +11,9 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
+ChartJS.register(zoomPlugin);
 // Register the necessary chart elements
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend, Filler);
 
@@ -20,42 +22,34 @@ function LineChart({ chartData }) {
   const options = {
     responsive: true,
     plugins: {
-      legend: {
-        display: false, // Hide legend
-      },
-      title: {
-        display: true,
-        //text: 'Stock Price Over Time', // Chart title
+      legend: { display: false },
+      title: { display: true },
+      text: 'Line Chart Example',
+      zoom: {
+        zoom: {
+          wheel: { enabled: true }, // Enable zooming with mouse wheel
+          pinch: { enabled: true }, // Enable zooming with pinch gestures
+          mode: 'x', // Zoom only on the x-axis
+        },
+        pan: {
+          enabled: true,
+          mode: 'x', // Pan only on the x-axis
+        },
       },
     },
     scales: {
       x: {
-        title: {
-          display: true,
-          //text: 'Time',
-        },
-        grid: {
-          display: false, // Hide grid on x-axis
-        },
+        title: { display: true, text: 'Time' },
+        grid: { display: false },
       },
       y: {
-        title: {
-          display: true,
-          text: 'Price (USD)',
-        },
-        grid: {
-          display: true,
-          color: 'rgba(192, 190, 190, 0.1)', // Subtle grid lines
-        },
+        title: { display: true, text: 'Price (USD)' },
+        grid: { display: true, color: 'rgba(192, 190, 190, 0.1)' },
       },
     },
     elements: {
-      line: {
-        borderWidth: 2, // Line thickness
-      },
       point: {
-        radius: 0, // Hide points on the line
-        hoverRadius: 5, // Increase hover radius for points
+        radius: 0, // Removes the circles on the chart
       },
     },
   };

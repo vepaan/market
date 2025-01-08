@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import LineChart from './chart'; // Import the new LineChart component
+import LineChart from './chart'; // Import the LineChart component
 import axios from 'axios';
 import BidAskTable from './bidask';
 
@@ -7,37 +7,37 @@ function Market() {
   const [chartData, setChartData] = useState(null);
   const [companyName, setCompanyName] = useState('');
   const [ticker, setTicker] = useState('AAPL'); // Default ticker
-  const [timeRange, setTimeRange] = useState('1mo'); // Default to 1 month
+  const [timeRange, setTimeRange] = useState('1mo'); // Default time range
   const [activeButton, setActiveButton] = useState('1mo'); // Default active button
   const [name, setName] = useState(''); // State for the ticker input
   const [currentPrice, setCurrentPrice] = useState(null); // Track the current price
+  const [simulationInterval, setSimulationInterval] = useState(null); // For 5s simulation
 
-  // Function to fetch stock data
   const fetchStockData = async () => {
     try {
       if (timeRange === '5s') {
-        // Fetch simulated price data for 5s chart
-        const simulateResponse = await axios.get('http://127.0.0.1:5000/api/simulate-price', {
-          params: { symbol: ticker }, // Pass ticker symbol for simulation
+        // Fetch the close price for the day as the initial point
+        const response = await axios.get('http://127.0.0.1:5000/api/stock-data', {
+          params: { ticker, range: '1d' },
         });
-        const simulatedPrices = simulateResponse.data.simulated_prices;
 
-        // Update the chart data state for 5s simulation
+        const closePrice = response.data.prices.at(-1);
+
         setChartData({
-          labels: Array.from({ length: simulatedPrices.length }, (_, i) => `${i * 5}s`), // 5s intervals
+          labels: ['0s'],
           datasets: [
             {
               label: `${ticker} Simulated Price (USD)`,
-              data: simulatedPrices,
-              borderColor: '#3b82f6', // Blue color for simulated chart
+              data: [closePrice],
+              borderColor: '#3b82f6',
               backgroundColor: (context) => {
                 const chart = context.chart;
                 const { ctx, chartArea } = chart;
                 if (!chartArea) return null;
 
                 const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Light blue
-                gradient.addColorStop(1, 'rgba(59, 130, 246, 0)'); // Transparent
+                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+                gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
                 return gradient;
               },
               fill: true,
@@ -45,10 +45,33 @@ function Market() {
           ],
         });
 
-        // Set the last price as the current price from simulated data
-        setCurrentPrice(simulatedPrices[simulatedPrices.length - 1]);
+        // Simulate updates every 5 seconds
+        let currentTime = 0;
+        clearInterval(simulationInterval); // Clear any existing interval
+        const interval = setInterval(() => {
+          currentTime += 5;
+
+          setChartData((prevData) => {
+            const lastPrice = prevData.datasets[0].data.at(-1);
+            const simulatedPrice = lastPrice + (Math.random() * 2 - 1);
+
+            return {
+              labels: [...prevData.labels, `${currentTime}s`],
+              datasets: [
+                {
+                  ...prevData.datasets[0],
+                  data: [...prevData.datasets[0].data, simulatedPrice],
+                },
+              ],
+            };
+          });
+
+          if (currentTime >= 3600) clearInterval(interval); // Stop after 1 hour
+        }, 5000);
+
+        setSimulationInterval(interval);
       } else {
-        // Fetch stock data and company name for other time ranges
+        // Fetch stock data for other ranges
         const response = await axios.get('http://127.0.0.1:5000/api/stock-data', {
           params: { ticker, range: timeRange },
         });
@@ -67,20 +90,18 @@ function Market() {
             {
               label: `${ticker} Stock Price (USD)`,
               data: data.prices,
-              borderColor: isIncreasing ? '#10b981' : '#ef4444', // Line color
+              borderColor: isIncreasing ? '#10b981' : '#ef4444',
               backgroundColor: (context) => {
                 const chart = context.chart;
                 const { ctx, chartArea } = chart;
                 if (!chartArea) return null;
 
                 const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-                if (isIncreasing) {
-                  gradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)'); // Light green
-                  gradient.addColorStop(1, 'rgba(16, 185, 129, 0)'); // Transparent
-                } else {
-                  gradient.addColorStop(0, 'rgba(239, 68, 68, 0.5)'); // Light red
-                  gradient.addColorStop(1, 'rgba(239, 68, 68, 0)'); // Transparent
-                }
+                gradient.addColorStop(
+                  0,
+                  isIncreasing ? 'rgba(16, 185, 129, 0.5)' : 'rgba(239, 68, 68, 0.5)'
+                );
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
                 return gradient;
               },
               fill: true,
@@ -88,7 +109,6 @@ function Market() {
           ],
         });
 
-        // Set the last price as the current price from stock data
         setCurrentPrice(data.prices[data.prices.length - 1]);
       }
     } catch (error) {
@@ -96,24 +116,21 @@ function Market() {
     }
   };
 
-  // Fetch data whenever the ticker or time range changes
   useEffect(() => {
     fetchStockData();
-    if (timeRange === '5s') {
-      const interval = setInterval(fetchStockData, 5000); // Refresh every 5 seconds
-      return () => clearInterval(interval); // Cleanup on unmount or range change
+    if (timeRange !== '5s' && simulationInterval) {
+      clearInterval(simulationInterval); // Clear simulation when not in 5s range
+      setSimulationInterval(null);
     }
   }, [ticker, timeRange]);
 
-  // Button click handler for time range
   const handleButtonClick = (range) => {
-    setActiveButton(range); // Update the active button
-    setTimeRange(range); // Update the time range for fetching data
+    setActiveButton(range);
+    setTimeRange(range);
   };
 
-  // Handle ticker change when input field is updated
   const handleTickerChange = () => {
-    setTicker(name.toUpperCase()); // Set ticker from input value
+    setTicker(name.toUpperCase());
   };
 
   return (
@@ -124,14 +141,15 @@ function Market() {
           {chartData && chartData.datasets ? (
             <>
               <h3 className="current-price">
-                ${chartData.datasets[0].data.at(-1).toFixed(2)} {/* Last point as current price */}
+                ${chartData.datasets[0].data.at(-1).toFixed(2)}
               </h3>
               <p
                 className="percent-change"
                 style={{
-                  color: chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0]
-                    ? '#10b981'
-                    : '#ef4444',
+                  color:
+                    chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0]
+                      ? '#10b981'
+                      : '#ef4444',
                 }}
               >
                 {chartData.datasets[0].data.at(-1) > chartData.datasets[0].data[0] ? '+' : ''}
@@ -155,11 +173,7 @@ function Market() {
             <p>Loading chart...</p>
           )}
         </div>
-        {chartData ? (
-          <LineChart chartData={chartData} />
-        ) : (
-          <p>Loading chart...</p>
-        )}
+        {chartData ? <LineChart chartData={chartData} /> : <p>Loading chart...</p>}
         <div className="chart-button-group">
           {['5s', '1d', '5d', '1mo', '1y', 'max'].map((range) => (
             <button
@@ -183,10 +197,10 @@ function Market() {
         </div>
       </div>
       <div className="order-section">
-        <div className='bid-ask-title'>Market</div>
-        <BidAskTable ticker={ticker} price={currentPrice} className='bid-ask'/>
-        <div className='place-order-title'>Place Order</div>
-        <div className='order-form'>Haha</div>
+        <div className="bid-ask-title">Market</div>
+        <BidAskTable ticker={ticker} price={currentPrice} className="bid-ask" />
+        <div className="place-order-title">Place Order</div>
+        <div className="order-form">Order form here</div>
       </div>
     </div>
   );
