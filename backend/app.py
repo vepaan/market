@@ -115,37 +115,31 @@ def calculate_historical_volatility(prices):
     annualized_volatility = daily_volatility * np.sqrt(252)
     return annualized_volatility
 
-@app.route('/api/simulate-price', methods=['GET'])
-def simulate_stock_price():
+@app.route('/api/simulate-price-5s', methods=['GET'])
+def simulate_5s_chart():
     symbol = request.args.get('symbol', 'AAPL')
-    steps = 5  # Simulate 5 price points for 5s chart
-    dt = 1     # Time step in seconds
+    dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
     theta = 0.1  # Mean reversion speed
-    mu = None
 
     try:
-        # Fetch historical data
+        # Fetch the last closing price as the starting point
         stock = yf.Ticker(symbol)
         hist = stock.history(period="1mo", interval="1d")
         if hist.empty:
             raise ValueError("No historical data available.")
 
-        current_price = hist['Close'].iloc[-1]
-        mu = hist['Close'].mean()  # Mean price over the period of the stock
-        sigma = calculate_historical_volatility(hist['Close'])
+        current_price = hist['Close'].iloc[-1]  # Use the latest close price
+        mu = hist['Close'].mean()  # Mean price over the period
+        sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility
 
-        # Ornstein-Uhlenbeck simulation
-        prices = [current_price]
-        for _ in range(steps - 1):
-            mean_reverting_term = theta * (mu - prices[-1]) * dt
-            stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
-            new_price = prices[-1] + mean_reverting_term + stochastic_term
-            prices.append(round(new_price, 2))
+        # Generate the next data point using Ornstein-Uhlenbeck
+        mean_reverting_term = theta * (mu - current_price) * dt
+        stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
+        new_price = current_price + mean_reverting_term + stochastic_term
 
         return jsonify({
             'symbol': symbol,
-            'simulated_prices': prices,
-            'volatitlity': sigma
+            'new_price': round(new_price, 2),
         })
 
     except Exception as e:
