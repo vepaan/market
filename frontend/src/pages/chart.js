@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -14,26 +14,29 @@ import {
 import zoomPlugin from 'chartjs-plugin-zoom';
 
 ChartJS.register(zoomPlugin);
-// Register the necessary chart elements
 ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Title, Tooltip, Legend, Filler);
 
-function LineChart({ chartData }) {
-  // Chart.js options for customization
+function LineChart({ chartData, is5sChart }) {
+  const chartRef = useRef(null);
+
   const options = {
     responsive: true,
     plugins: {
       legend: { display: false },
-      title: { display: true },
-      text: 'Line Chart Example',
+      title: { display: true},
       zoom: {
-        zoom: {
-          wheel: { enabled: true }, // Enable zooming with mouse wheel
-          pinch: { enabled: true }, // Enable zooming with pinch gestures
-          mode: 'x', // Zoom only on the x-axis
-        },
         pan: {
           enabled: true,
-          mode: 'x', // Pan only on the x-axis
+          mode: 'x', // Allow horizontal panning
+        },
+        zoom: {
+          wheel: {
+            enabled: true, // Allow zooming with the mouse wheel
+          },
+          pinch: {
+            enabled: true, // Allow zooming with pinch gestures
+          },
+          mode: 'x', // Zoom horizontally
         },
       },
     },
@@ -54,9 +57,22 @@ function LineChart({ chartData }) {
     },
   };
 
+  useEffect(() => {
+    if (is5sChart && chartRef.current) {
+      const chartInstance = chartRef.current;
+
+      // Ensure the entire dataset is available
+      const fullRange = chartData.labels;
+      chartInstance.options.scales.x.min = fullRange[0];
+      chartInstance.options.scales.x.max = fullRange[fullRange.length - 1];
+
+      chartInstance.update();
+    }
+  }, [chartData, is5sChart]);
+
   return (
     <div className="line-chart-container">
-      <Line data={chartData} options={options} />
+      <Line ref={chartRef} data={chartData} options={options} />
     </div>
   );
 }

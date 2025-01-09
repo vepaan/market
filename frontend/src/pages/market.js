@@ -55,12 +55,21 @@ function Market() {
             const lastPrice = prevData.datasets[0].data.at(-1);
             const simulatedPrice = lastPrice + (Math.random() * 2 - 1);
 
+            const newLabels = [...prevData.labels, `${currentTime}s`];
+            const newData = [...prevData.datasets[0].data, simulatedPrice];
+
+            // Limit to last 30 seconds (6 points for 5s intervals)
+            if (newLabels.length > 6) {
+              newLabels.shift();
+              newData.shift();
+            }
+
             return {
-              labels: [...prevData.labels, `${currentTime}s`],
+              labels: newLabels,
               datasets: [
                 {
                   ...prevData.datasets[0],
-                  data: [...prevData.datasets[0].data, simulatedPrice],
+                  data: newData,
                 },
               ],
             };
