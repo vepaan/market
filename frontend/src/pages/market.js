@@ -67,7 +67,7 @@ function Market() {
           });
 
           if (currentTime >= 3600) clearInterval(interval); // Stop after 1 hour
-        }, 5000);
+        }, 1000);
 
         setSimulationInterval(interval);
       } else {
