@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LineChart from './chart'; // Import the LineChart component
 import axios from 'axios';
 import BidAskTable from './bidask';
+import PlaceOrder from './placeorder';
 
 function Market() {
   const [chartData, setChartData] = useState(null);
@@ -200,7 +201,7 @@ function Market() {
         <div className="bid-ask-title">Market</div>
         <BidAskTable ticker={ticker} price={currentPrice} className="bid-ask" />
         <div className="place-order-title">Place Order</div>
-        <div className="order-form">Order form here</div>
+        <PlaceOrder />
       </div>
     </div>
   );
