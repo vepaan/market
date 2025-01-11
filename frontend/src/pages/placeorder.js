@@ -11,6 +11,7 @@ function PlaceOrder() {
             <input type="number" id="price" name="price" placeholder="Enter price..." />
             <button type="submit">Buy</button>
             <button type="submit">Sell</button>
+            <button type="submit">Short Sell</button> 
         </form>
     </div>
   );
