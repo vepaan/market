@@ -7,6 +7,7 @@ const Candlestick = ({ data }) => {
   const spacing = 2; // Spacing between candles
   const axisPadding = 40; // Space for axes and labels
   const maxWidth = 1200; // Maximum width before scrolling is triggered
+  const additionalHeight = chartHeight * 0.1; // 10% extra height for vertical scroll
 
   // Determine the vertical position of each candle
   const chartMinY = Math.min(...data.map((d) => Math.min(d.start, d.end)));
@@ -31,22 +32,23 @@ const Candlestick = ({ data }) => {
   return (
     <div
       style={{
-        overflowX: "auto",
-        marginTop: "33px",
+        overflow: "auto", // Allow both horizontal and vertical scroll
+        marginTop: "13px",
         width: "100%",
+        height: chartHeight + additionalHeight + axisPadding, // Allow for 10% extra space vertically
       }}
       onWheel={handleZoom}
     >
       <svg
         width={isZoomed ? maxWidth : chartWidth + axisPadding}
-        height={chartHeight + axisPadding}
+        height={chartHeight + additionalHeight + axisPadding} // Adjusted height with additional space
       >
         {/* Y-Axis */}
         <line
           x1={axisPadding}
           y1={0}
           x2={axisPadding}
-          y2={chartHeight}
+          y2={chartHeight + additionalHeight}
           stroke="red"
           strokeWidth={1}
         />
@@ -80,9 +82,9 @@ const Candlestick = ({ data }) => {
         {/* X-Axis */}
         <line
           x1={axisPadding}
-          y1={chartHeight}
+          y1={chartHeight + additionalHeight}
           x2={chartWidth + axisPadding}
-          y2={chartHeight}
+          y2={chartHeight + additionalHeight}
           stroke="red"
           strokeWidth={1}
         />
@@ -93,15 +95,15 @@ const Candlestick = ({ data }) => {
             <g key={i}>
               <line
                 x1={xPos}
-                y1={chartHeight}
+                y1={chartHeight + additionalHeight}
                 x2={xPos}
-                y2={chartHeight + 5}
+                y2={chartHeight + additionalHeight + 5}
                 stroke="red"
                 strokeWidth={1}
               />
               <text
                 x={xPos}
-                y={chartHeight + 15}
+                y={chartHeight + additionalHeight + 15}
                 textAnchor="middle"
                 fontSize={10}
                 fill="red"

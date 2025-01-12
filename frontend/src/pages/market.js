@@ -42,7 +42,7 @@ function Market() {
               { start: lastPrice, end: simulatedPrice },
             ].slice(-60); // Keep the last 60 candles (5 minutes)
           });
-        }, 5000);
+        }, 250);
 
         setSimulationInterval(interval);
       } else {
