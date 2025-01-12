@@ -11,15 +11,9 @@ function PlaceOrder() {
         </div>
 
         <div className="form-row">
-          <button type="submit" className="btn btn-buy">
-            Buy
-          </button>
-          <button type="submit" className="btn btn-sell">
-            Sell
-          </button>
-          <button type="submit" className="btn btn-short-sell">
-            Short Sell
-          </button>
+          <button type="submit" className="button">Buy</button>
+          <button type="submit" className="button">Sell</button>
+          <button type="submit" className="button">Short Sell</button>
         </div>
 
         <div className="form-row">
