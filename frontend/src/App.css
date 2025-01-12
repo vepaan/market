@@ -117,10 +117,11 @@
   background-color: rgb(27, 26, 26);
   color: white;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Ensures the children are stacked vertically */
   align-items: center;
-  overflow: hidden;
-  flex-grow: 1; /* Allow growth of the order section */
+  overflow: hidden; /* Hide any overflowing content */
+  flex-grow: 0; /* It should not grow beyond content height */
+  margin-bottom: 100px;
 }
 
 
@@ -138,6 +139,18 @@
     width: 90%;
     top: 20px;
     margin: 20px auto;
+    margin-bottom: 80px;
+  }
+  .order-form {
+    background-color: rgb(14, 13, 19);
+    outline: solid 1px rgb(53, 53, 53);
+    width: 90%;
+    margin-bottom: 26px;
+    position: relative;
+    border-radius: 2px;
+    min-height: 225px; /* Ensure a minimum height */
+    height: auto; /* Allow the height to adjust based on content */
+    flex-grow: 1; /* Allow it to grow based on the content */
   }
 }
 
@@ -203,13 +216,32 @@
   background-color: rgb(14, 13, 19);
   outline: solid 1px rgb(53, 53, 53);
   width: 90%;
+  margin-bottom: 26px;
   position: relative;
   border-radius: 2px;
   min-height: 225px; /* Ensure a minimum height */
   height: auto; /* Allow the height to adjust based on content */
-  flex-grow: 1; /* If it's within a flex container, it will grow based on content */
+  flex-grow: 0; /* Prevent it from growing unnecessarily */
+  overflow-y: auto; /* Enable vertical scrolling if content overflows */
 }
 
+/* Modern scrollbar for order-form */
+.order-form::-webkit-scrollbar {
+  width: 10px;
+}
+
+.order-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.order-form::-webkit-scrollbar-thumb {
+  background: rgb(37, 32, 65);
+  border-radius: 5px;
+}
+
+.order-form::-webkit-scrollbar-thumb:hover {
+  background: #0047ab;
+}
 
 .bid-ask {
   background-color: rgb(14, 13, 19);
