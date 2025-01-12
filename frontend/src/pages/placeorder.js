@@ -7,7 +7,7 @@ function PlaceOrder() {
   const [orderType, setOrderType] = useState("market");
   const [duration, setDuration] = useState("day");
   const [stoploss, setStopLoss] = useState(0);
-  const [leverage, setLevergae] = useState(1);
+  const [leverage, setLeverage] = useState(1);
 
   const handleSubmit = (e, action) => {
     e.preventDefault();
@@ -28,11 +28,8 @@ function PlaceOrder() {
       <form className="order-form-space">
         {/* Quantity and Price */}
         <div className="form-row">
-          <div className="label">Quantity</div>
-          <div className="label">Price</div>
-        </div>
-        <div className="form-row">
           <div className="input-field">
+            <label className="label">Quantity</label>
             <input
               type="number"
               className="qty-box"
@@ -44,6 +41,7 @@ function PlaceOrder() {
             <span className="currency-sign">#</span>
           </div>
           <div className="input-field">
+            <label className="label">Price</label>
             <input
               type="number"
               className="price-box"
@@ -58,11 +56,8 @@ function PlaceOrder() {
 
         {/* Order Type and Duration */}
         <div className="form-row">
-          <div className="label">Order Type</div>
-          <div className="label">Time in Force</div>
-        </div>
-        <div className="form-row">
           <div className="input-field">
+            <label className="label">Order Type</label>
             <select
               id="orderType"
               name="orderType"
@@ -76,6 +71,7 @@ function PlaceOrder() {
           </div>
 
           <div className="input-field">
+            <label className="label">Time in Force</label>
             <select
               id="duration"
               name="duration"
@@ -93,11 +89,8 @@ function PlaceOrder() {
 
         {/* Stop Loss and Leverage */}
         <div className="form-row">
-          <div className="label">Stop Loss</div>
-          <div className="label">Leverage</div>
-        </div>
-        <div className="form-row">
           <div className="input-field">
+            <label className="label">Stop Loss</label>
             <input
               type="number"
               className="stop-loss"
@@ -109,15 +102,16 @@ function PlaceOrder() {
             <span className="currency-sign">$</span>
           </div>
           <div className="input-field">
+            <label className="label">Leverage</label>
             <input
               type="number"
               className="leverage"
               id="leverage"
               name="leverage"
               value={leverage}
-              onChange={(e) => setLevergae(e.target.value)}
+              onChange={(e) => setLeverage(e.target.value)}
             />
-            <span className="currency-sign">x</span>
+            <span className="currency-sign">X</span>
           </div>
         </div>
 
