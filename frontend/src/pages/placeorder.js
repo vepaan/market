@@ -6,6 +6,8 @@ function PlaceOrder() {
   const [price, setPrice] = useState("");
   const [orderType, setOrderType] = useState("market");
   const [duration, setDuration] = useState("day");
+  const [stoploss, setStopLoss] = useState(0);
+  const [leverage, setLevergae] = useState(1);
 
   const handleSubmit = (e, action) => {
     e.preventDefault();
@@ -45,7 +47,7 @@ function PlaceOrder() {
 
         <div className="form-row">
           <label htmlFor="orderType" className="order-type-label">
-            Order Type:
+            Order Type
           </label>
           <select
             id="orderType"
@@ -69,6 +71,28 @@ function PlaceOrder() {
             <option value="IOC">Immediate Or Cancel</option>
             <option value="FOK">Fill Or Kill</option>
           </select>
+        </div>
+
+        <div className="form-row">
+          Stop Loss
+        <input
+            type="number"
+            className="stop-loss"
+            id="stoploss"
+            name="stoploss"
+            value={stoploss}
+            onChange={(e) => setStopLoss(e.target.value)}
+          />
+          Leverage
+          <input
+            type="number"
+            className="leverage"
+            id="leverage"
+            name="leverage"
+            value={leverage}
+            onChange={(e) => setLevergae(e.target.value)}
+          />
+          x
         </div>
 
         <div className="form-row">

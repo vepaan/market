@@ -25,6 +25,28 @@
     background-color: rgb(17, 17, 17);
     color: white;
   }
+
+  .stop-loss{
+    padding: 6px;
+    font-size: 14px;
+    width: 80px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgb(17, 17, 17);
+    color: white;
+  }
+
+  .leverage{
+    padding: 6px;
+    font-size: 14px;
+    width: 50px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgb(17, 17, 17);
+    color: white;
+  }
   
   .qty-box:focus,
   .price-box:focus {
