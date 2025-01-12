@@ -1,121 +1,155 @@
 .order-form-space {
-display: flex;
-flex-wrap: wrap;
-gap: 10px;
-padding: 20px;
-}
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px;
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .qty-box,
+  .price-box {
+    flex: 1 1 calc(50% - 10px);
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgb(17, 17, 17);
+    color: white;
+  }
+  
+  .qty-box:focus,
+  .price-box:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
+  }
+  
+  .order-form-space .button {
+    flex: 1 1 calc(33.33% - 10px);
+    padding: 6px;
+    font-size: 15px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .order-form-space button[type="submit"]:hover {
+    opacity: 0.9;
+  }
+  
+  .order-form-space button:nth-child(1) {
+    background-color: #10b981; /* Green for Buy */
+  }
+  
+  .order-form-space button:nth-child(2) {
+    background-color: #ef4444; /* Red for Sell */
+  }
+  
+  .order-form-space button:nth-child(3) {
+    background-color: #6b7280; /* Gray for Short Sell */
+  }
+  
+  .order-form-space label {
+    margin-right: 0px;
+    font-size: 16px;
+    color: white;
+  }
+  
+  .order-form-space select {
+    padding: 7px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23333'%3E%3Cpath fill-rule='evenodd' d='M10 12a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3A1 1 0 0110 12z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat right 10px center;
+    background-color: rgb(17, 17, 17);
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .order-form-space select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
+  }
+  
+  .order-type-dropdown-1{
+    padding: 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 135px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: rgb(17, 17, 17);
+    color: #fff;
+    cursor: pointer;
+  }
 
-.form-row {
-display: flex;
-gap: 10px;
-flex-wrap: wrap;
-justify-content: center;
-width: 100%;
-}
-
-.qty-box,
-.price-box {
-flex: 1 1 calc(50% - 10px);
-padding: 10px;
-font-size: 14px;
-border: 1px solid #ccc;
-border-radius: 4px;
-box-sizing: border-box;
-margin-bottom: 10px;
-background-color: rgb(17, 17, 17);
-}
-
-.qty-box:focus,
-.price-box:focus {
-outline: none;
-border-color: #3b82f6;
-box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
-}
-
-.order-form-space .button {
-flex: 1 1 calc(33.33% - 10px);
-padding: 6px;
-font-size: 15px;
-border: none;
-border-radius: 4px;
-color: #fff;
-cursor: pointer;
-transition: background-color 0.2s ease;
-margin-bottom: 10px;
-}
-
-.order-form-space button[type="submit"]:hover {
-opacity: 0.9;
-}
-
-.order-form-space button:nth-child(1) {
-background-color: #10b981; /* Green for Buy */
-}
-
-.order-form-space button:nth-child(2) {
-background-color: #ef4444; /* Red for Sell */
-}
-
-.order-form-space button:nth-child(3) {
-background-color: #6b7280; /* Gray for Short Sell */
-}
-
-.order-form-space label {
-margin-right: 10px;
-font-size: 16px;
-color: white;
-}
-
-.order-form-space select {
-padding: 7px;
-font-size: 14px;
-border: 1px solid #ccc;
-border-radius: 4px;
-appearance: none;
-background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23333'%3E%3Cpath fill-rule='evenodd' d='M10 12a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3A1 1 0 0110 12z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat right 10px center;
-background-color: #fff;
-background-size: 16px;
-color: #333;
-cursor: pointer;
-}
-
-.order-form-space select:focus {
-outline: none;
-border-color: #3b82f6;
-box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
-}
-
-.order-type-dropdown {
-padding: 10px;
-appearance: none;
-font-size: 16px;
-border: 1px solid #ccc;
-border-radius: 4px;
-background-color: rgb(17, 17, 17); /* Red background */
-color: #fff; /* White text for contrast */
-appearance: none;
-background-size: 16px;
-cursor: pointer;
-}
-
-.order-type-dropdown:focus {
-outline: none;
-border-color: rgb(17, 17, 17); /* Darker red border on focus */
-}
-
-.order-type-dropdown option {
-background-color: rgb(17, 17, 17); /* Red background for options */
-color: #fff; /* White text for contrast */
-}
-
-
-/* Responsive Layout */
-@media (max-width: 768px) {
-.order-form-space .qty-box,
-.order-form-space .price-box,
-.order-form-space button,
-.order-form-space label,
-.order-form-space select {
-    flex: 1 1 100%; /* Each component takes full width */
-}
-}
+  .order-type-dropdown-2{
+    padding: 10px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 180px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: rgb(17, 17, 17);
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .order-type-dropdown-1::after,
+  .order-type-dropdown-2::after {
+    content: '▼';
+    color: #fff;
+    font-size: 18px;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  
+  .order-type-dropdown-1:focus,
+  .order-type-dropdown-2:focus {
+    outline: none;
+    border-color: rgb(17, 17, 17);
+    background-color: rgb(17, 17, 17);
+  }
+  
+  .order-type-dropdown-1 option,
+  .order-type-dropdown-2 option {
+    background-color: rgb(17, 17, 17);
+    color: #fff;
+  }
+  
+  .order-type-dropdown-1:active,
+  .order-type-dropdown-2:active {
+    background-color: rgb(17, 17, 17);
+  }
+  
+  /* Responsive Layout */
+  @media (max-width: 768px) {
+    .order-form-space .qty-box,
+    .order-form-space .price-box,
+    .order-form-space button,
+    .order-form-space label,
+    .order-form-space select {
+      flex: 1 1 100%;
+    }
+  }
+  
