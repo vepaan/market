@@ -1,61 +1,76 @@
 .order-form-space {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 20px;
     padding: 20px;
-  }
-  
-  .form-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+}
+
+/* Form row: labels and inputs in the same row */
+.form-row {
+    display: flex; /* Align items horizontally */
+    gap: 20px; /* Space between the label and input field */
     width: 100%;
     margin-bottom: 10px;
-  }
-  
-  .qty-box,
-  .price-box {
-    flex: 1 1 calc(50% - 10px);
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    background-color: rgb(17, 17, 17);
-    color: white;
-  }
+}
 
-  .stop-loss{
-    padding: 6px;
-    font-size: 14px;
-    width: 80px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    background-color: rgb(17, 17, 17);
+/* Align labels and input fields in two rows: labels on top, values on bottom */
+.form-row .label {
+    flex: 1 1 50%; /* Each label takes up 50% width */
+    display: block;
+    font-size: 16px;
     color: white;
-  }
+}
 
-  .leverage{
-    padding: 6px;
+.form-row .input-field {
+    flex: 1 1 50%; /* Each input field takes up 50% width */
+    display: block;
+    position: relative; /* Allow for absolute positioning of currency symbol */
+}
+
+.label-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+/* Styling for input fields (qty, price, stop-loss, leverage) */
+.qty-box,
+.price-box,
+.stop-loss,
+.leverage {
+    padding: 6px 6px 6px 30px; /* Space for the dollar sign */
     font-size: 14px;
-    width: 50px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
     background-color: rgb(17, 17, 17);
     color: white;
-  }
-  
-  .qty-box:focus,
-  .price-box:focus {
+    width: 100%;
+}
+
+/* Currency sign inside the input field */
+.currency-sign {
+    position: absolute;
+    left: 10px; /* Adjust this value for alignment */
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 16px; /* You can adjust the font size if needed */
+}
+
+/* Focused input fields */
+.qty-box:focus,
+.price-box:focus,
+.stop-loss:focus,
+.leverage:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
-  }
-  
-  .order-form-space .button {
+}
+
+/* Buttons */
+.order-form-space .button {
     flex: 1 1 calc(33.33% - 10px);
     padding: 6px;
     font-size: 15px;
@@ -64,31 +79,26 @@
     color: #fff;
     cursor: pointer;
     transition: background-color 0.2s ease;
-  }
-  
-  .order-form-space button[type="submit"]:hover {
+}
+
+.order-form-space button[type="submit"]:hover {
     opacity: 0.9;
-  }
-  
-  .order-form-space button:nth-child(1) {
+}
+
+.order-form-space button:nth-child(1) {
     background-color: #10b981; /* Green for Buy */
-  }
-  
-  .order-form-space button:nth-child(2) {
+}
+
+.order-form-space button:nth-child(2) {
     background-color: #ef4444; /* Red for Sell */
-  }
-  
-  .order-form-space button:nth-child(3) {
+}
+
+.order-form-space button:nth-child(3) {
     background-color: #6b7280; /* Gray for Short Sell */
-  }
-  
-  .order-form-space label {
-    margin-right: 0px;
-    font-size: 16px;
-    color: white;
-  }
-  
-  .order-form-space select {
+}
+
+/* Dropdown styles */
+.order-form-space select {
     padding: 7px;
     font-size: 14px;
     border: 1px solid #ccc;
@@ -98,44 +108,31 @@
     background-color: rgb(17, 17, 17);
     color: #fff;
     cursor: pointer;
-  }
-  
-  .order-form-space select:focus {
+}
+
+.order-form-space select:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
-  }
-  
-  .order-type-dropdown-1{
-    padding: 10px;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 135px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: rgb(17, 17, 17);
-    color: #fff;
-    cursor: pointer;
-  }
+}
 
-  .order-type-dropdown-2{
+.order-type-dropdown-1,
+.order-type-dropdown-2 {
     padding: 10px;
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    width: 180px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: rgb(17, 17, 17);
     color: #fff;
     cursor: pointer;
-  }
-  
-  .order-type-dropdown-1::after,
-  .order-type-dropdown-2::after {
+}
+
+/* Dropdown arrow styling */
+.order-type-dropdown-1::after,
+.order-type-dropdown-2::after {
     content: '▼';
     color: #fff;
     font-size: 18px;
@@ -144,34 +141,35 @@
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
-  }
-  
-  .order-type-dropdown-1:focus,
-  .order-type-dropdown-2:focus {
+}
+
+.order-type-dropdown-1:focus,
+.order-type-dropdown-2:focus {
     outline: none;
     border-color: rgb(17, 17, 17);
     background-color: rgb(17, 17, 17);
-  }
-  
-  .order-type-dropdown-1 option,
-  .order-type-dropdown-2 option {
+}
+
+.order-type-dropdown-1 option,
+.order-type-dropdown-2 option {
     background-color: rgb(17, 17, 17);
     color: #fff;
-  }
-  
-  .order-type-dropdown-1:active,
-  .order-type-dropdown-2:active {
+}
+
+.order-type-dropdown-1:active,
+.order-type-dropdown-2:active {
     background-color: rgb(17, 17, 17);
-  }
-  
-  /* Responsive Layout */
-  @media (max-width: 768px) {
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
     .order-form-space .qty-box,
     .order-form-space .price-box,
+    .order-form-space .stop-loss,
+    .order-form-space .leverage,
     .order-form-space button,
     .order-form-space label,
     .order-form-space select {
-      flex: 1 1 100%;
+        flex: 1 1 100%;
     }
-  }
-  
+}
