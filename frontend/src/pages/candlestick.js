@@ -1,50 +1,142 @@
-import React from 'react';
-import {
-  ChartCanvas,
-  Chart,
-  XAxis,
-  YAxis,
-  CandlestickSeries,
-  discontinuousTimeScaleProvider,
-  MouseCoordinateY,
-  MouseCoordinateX,
-} from "react-financial-charts";
-import { last } from "react-financial-charts/lib/utils";
+import React, { useState } from "react";
 
-const Candlestick = ({ data, width, ratio }) => {
-  const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(
-    (d) => new Date(d.time)
-  );
+const Candlestick = ({ data }) => {
+  const chartHeight = 350; // Adjusted height to make room for axes
+  const chartWidth = 800; // Total width of the chart
+  const candleWidth = 10; // Width of each candle
+  const spacing = 2; // Spacing between candles
+  const axisPadding = 40; // Space for axes and labels
+  const maxWidth = 1200; // Maximum width before scrolling is triggered
 
-  const {
-    data: chartData,
-    xScale,
-    xAccessor,
-    displayXAccessor,
-  } = xScaleProvider(data);
+  // Determine the vertical position of each candle
+  const chartMinY = Math.min(...data.map((d) => Math.min(d.start, d.end)));
+  const chartMaxY = Math.max(...data.map((d) => Math.max(d.start, d.end)));
+  const priceRange = chartMaxY - chartMinY;
 
-  const xExtents = [xAccessor(last(chartData)), xAccessor(chartData[0])];
+  // Determine the horizontal scale for time labels
+  const timeLabels = data.map((_, index) => `${index * 5}s`);
+  const totalCandleWidth = candleWidth + spacing;
+
+  // Horizontal scrolling logic
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const handleZoom = (e) => {
+    if (e.deltaY < 0 && chartWidth < maxWidth) {
+      setIsZoomed(true);
+    } else if (e.deltaY > 0 && chartWidth > 800) {
+      setIsZoomed(false);
+    }
+  };
 
   return (
-    <ChartCanvas
-      height={400}
-      width={width}
-      ratio={ratio}
-      data={chartData}
-      seriesName="Candlestick"
-      xScale={xScale}
-      xAccessor={xAccessor}
-      displayXAccessor={displayXAccessor}
-      xExtents={xExtents}
+    <div
+      style={{
+        overflowX: "auto",
+        marginTop: "33px",
+        width: "100%",
+      }}
+      onWheel={handleZoom}
     >
-      <Chart id={1} yExtents={(d) => [d.high, d.low]}>
-        <XAxis />
-        <YAxis />
-        <MouseCoordinateY />
-        <MouseCoordinateX />
-        <CandlestickSeries />
-      </Chart>
-    </ChartCanvas>
+      <svg
+        width={isZoomed ? maxWidth : chartWidth + axisPadding}
+        height={chartHeight + axisPadding}
+      >
+        {/* Y-Axis */}
+        <line
+          x1={axisPadding}
+          y1={0}
+          x2={axisPadding}
+          y2={chartHeight}
+          stroke="red"
+          strokeWidth={1}
+        />
+        {/* Y-Axis Ticks and Labels */}
+        {[...Array(6)].map((_, i) => {
+          const yValue = chartMinY + (priceRange * (5 - i)) / 5; // Divide into 5 intervals
+          const yPos = (chartHeight * i) / 5;
+          return (
+            <g key={i}>
+              <line
+                x1={axisPadding - 5}
+                y1={yPos}
+                x2={axisPadding}
+                y2={yPos}
+                stroke="red"
+                strokeWidth={1}
+              />
+              <text
+                x={axisPadding - 10}
+                y={yPos + 4}
+                textAnchor="end"
+                fontSize={10}
+                fill="red"
+              >
+                {yValue.toFixed(2)}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* X-Axis */}
+        <line
+          x1={axisPadding}
+          y1={chartHeight}
+          x2={chartWidth + axisPadding}
+          y2={chartHeight}
+          stroke="red"
+          strokeWidth={1}
+        />
+        {/* X-Axis Ticks and Labels */}
+        {timeLabels.map((label, i) => {
+          const xPos = axisPadding + i * totalCandleWidth;
+          return (
+            <g key={i}>
+              <line
+                x1={xPos}
+                y1={chartHeight}
+                x2={xPos}
+                y2={chartHeight + 5}
+                stroke="red"
+                strokeWidth={1}
+              />
+              <text
+                x={xPos}
+                y={chartHeight + 15}
+                textAnchor="middle"
+                fontSize={10}
+                fill="red"
+              >
+                {label}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Candlesticks */}
+        {data.map((candle, index) => {
+          const x = axisPadding + index * totalCandleWidth; // Horizontal position
+          const startY =
+            chartHeight -
+            ((candle.start - chartMinY) / priceRange) * chartHeight; // Start price position
+          const endY =
+            chartHeight -
+            ((candle.end - chartMinY) / priceRange) * chartHeight; // End price position
+          const height = Math.abs(startY - endY); // Height of the candle
+          const color = candle.end >= candle.start ? "#10b981" : "#ef4444"; // Green for upward, red for downward
+
+          return (
+            <rect
+              key={index}
+              x={x}
+              y={Math.min(startY, endY)}
+              width={candleWidth}
+              height={height}
+              fill={color}
+            />
+          );
+        })}
+      </svg>
+    </div>
   );
 };
 
