@@ -1,16 +1,99 @@
-.order-form{
+.order-form-space {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
-}
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
 
-.qty-box{
-    margin-right: 20px;
-    width: 40%;
-}
-
-.price-box{
-    margin-left: 20px;
-    width: 40%;
-}
+  .qty-box,
+  .price-box {
+    flex: 1 1 calc(50% - 10px);
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  .qty-box:focus,
+  .price-box:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
+  }
+  
+  .order-form-space .button {
+    flex: 1 1 calc(33.33% - 10px);
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .order-form-space button[type="submit"]:hover {
+    opacity: 0.9;
+  }
+  
+  .order-form-space button:nth-child(1) {
+    background-color: #10b981; /* Green for Buy */
+  }
+  
+  .order-form-space button:nth-child(2) {
+    background-color: #ef4444; /* Red for Sell */
+  }
+  
+  .order-form-space button:nth-child(3) {
+    background-color: #6b7280; /* Gray for Short Sell */
+  }
+  
+  .order-form-space label {
+    margin-right: 10px;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .order-form-space select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23333'%3E%3Cpath fill-rule='evenodd' d='M10 12a1 1 0 01-.707-.293l-3-3a1 1 0 011.414-1.414L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3A1 1 0 0110 12z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat right 10px center;
+    background-color: #fff;
+    background-size: 16px;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  .order-form-space select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
+  }
+  
+  /* Responsive Layout */
+  @media (max-width: 768px) {
+    .order-form-space .qty-box,
+    .order-form-space .price-box,
+    .order-form-space button,
+    .order-form-space label,
+    .order-form-space select {
+      flex: 1 1 100%; /* Each component takes full width */
+    }
+  }
+  
