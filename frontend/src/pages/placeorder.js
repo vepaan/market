@@ -4,10 +4,10 @@ import '../placeorder.css';
 function PlaceOrder() {
   return (
     <div className="order-form">
-        <form>
+        <form className="order-form">
           <div>
-            <input type="number" id="quantity" name="quantity" placeholder="Enter quantity..." />
-            <input type="number" id="price" name="price" placeholder="Enter price..." />
+            <input type="number" className='qty-box' id="quantity" name="quantity" placeholder="Enter quantity..." />
+            <input type="number" className='price-box' id="price" name="price" placeholder="Enter price..." />
           </div>  
           <div>
             <button type="submit">Buy</button>
