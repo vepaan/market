@@ -28,7 +28,7 @@ function PlaceOrder() {
       <form className="order-form-space">
         {/* Quantity and Price */}
         <div className="form-row">
-          <div className="label">Qty</div>
+          <div className="label">Quantity</div>
           <div className="label">Price</div>
         </div>
         <div className="form-row">
@@ -38,11 +38,10 @@ function PlaceOrder() {
               className="qty-box"
               id="quantity"
               name="quantity"
-              placeholder="Enter quantity..."
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
-            <span className="currency-sign">$</span>
+            <span className="currency-sign">#</span>
           </div>
           <div className="input-field">
             <input
@@ -50,7 +49,6 @@ function PlaceOrder() {
               className="price-box"
               id="price"
               name="price"
-              placeholder="Enter price..."
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
