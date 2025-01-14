@@ -112,7 +112,7 @@ def get_bid_ask():
 def calculate_historical_volatility(prices):
     log_returns = np.log(prices / prices.shift(1)).dropna()
     daily_volatility = np.std(log_returns)
-    annualized_volatility = daily_volatility * np.sqrt(15) #252 if computing the annualized volatility  but 15 for the latest trends
+    annualized_volatility = daily_volatility * np.sqrt(252) #252 if computing the annualized volatility  but 15 for the latest trends
     return annualized_volatility
 
 @app.route('/api/simulate-price-5s', methods=['GET'])
@@ -130,11 +130,11 @@ def simulate_5s_chart():
 
         current_price = hist['Close'].iloc[-1]  # Use the latest close price
         mu = hist['Close'].mean()  # Mean price over the period
-        sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility
+        sigma = calculate_historical_volatility(hist['Close']) * 300 # Annualized volatility #multiply by whatever factor
 
         # Generate the next data point using Ornstein-Uhlenbeck
         mean_reverting_term = theta * (mu - current_price) * dt
-        stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
+        stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt) * 3
         new_price = current_price + mean_reverting_term + stochastic_term
 
         return jsonify({

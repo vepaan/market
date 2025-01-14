@@ -19,33 +19,45 @@ function Market() {
   const fetchStockData = async () => {
     try {
       if (timeRange === "5s") {
+        // Fetch the initial price
         const response = await axios.get(
-          "http://127.0.0.1:5000/api/stock-data",
-          { params: { ticker, range: "1d" } }
+            "http://127.0.0.1:5000/api/simulate-price-5s",
+            { params: { symbol: ticker } }
         );
-
-        const closePrice = response.data.prices.at(-1);
+    
+        const closePrice = response.data.new_price; // Extract initial price
         setCandlestickData([{ start: closePrice, end: closePrice }]);
-
-        let currentTime = 0;
+    
         clearInterval(simulationInterval); // Clear any existing interval
-
-        const interval = setInterval(() => {
-          currentTime += 5;
-
-          setCandlestickData((prevData) => {
-            const lastPrice = prevData.at(-1).end;
-            const simulatedPrice = lastPrice + (Math.random() * 2 - 1);
-
-            return [
-              ...prevData,
-              { start: lastPrice, end: simulatedPrice },
-            ].slice(-60); // Keep the last 60 candles (5 minutes)
-          });
+    
+        const interval = setInterval(async () => {
+            try {
+                // Fetch the next simulated price from the API
+                const simulatedResponse = await axios.get(
+                    "http://127.0.0.1:5000/api/simulate-price-5s",
+                    { params: { symbol: ticker } }
+                );
+    
+                const simulatedPrice = simulatedResponse.data.new_price;
+    
+                // Update candlestick data
+                setCandlestickData((prevData) => {
+                    const lastPrice = prevData.at(-1).end;
+    
+                    // Use the simulated price directly
+                    return [
+                        ...prevData,
+                        { start: lastPrice, end: simulatedPrice },
+                    ].slice(-60); // Keep the last 60 candles (5 minutes)
+                });
+            } catch (error) {
+                console.error("Error fetching simulated price:", error);
+            }
         }, 250);
-
+    
         setSimulationInterval(interval);
-      } else {
+    }
+    else {
         const response = await axios.get(
           "http://127.0.0.1:5000/api/stock-data",
           { params: { ticker, range: timeRange } }
