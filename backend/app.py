@@ -120,6 +120,7 @@ def simulate_5s_chart():
     symbol = request.args.get('symbol', 'AAPL')
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
     theta = 0.1  # Mean reversion speed
+    random_factor = 0.02  # Random shock factor for random price movement (adjust as needed)
 
     try:
         # Fetch the last closing price as the starting point
@@ -130,12 +131,20 @@ def simulate_5s_chart():
 
         current_price = hist['Close'].iloc[-1]  # Use the latest close price
         mu = hist['Close'].mean()  # Mean price over the period
-        sigma = calculate_historical_volatility(hist['Close']) * 300 # Annualized volatility #multiply by whatever factor
+        sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility (multiplied for more significant effect)
 
         # Generate the next data point using Ornstein-Uhlenbeck
         mean_reverting_term = theta * (mu - current_price) * dt
-        stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt) * 3
-        new_price = current_price + mean_reverting_term + stochastic_term
+        stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
+
+        # Randomly introduce rises and dips
+        random_shock = np.random.choice([1, -1]) * random_factor * current_price * np.random.normal(0, 1)
+
+        # Calculate the new price with added random movement
+        new_price = current_price + mean_reverting_term + stochastic_term + random_shock
+
+        # Ensure the new price doesn't go negative
+        new_price = max(new_price, 0.01)
 
         return jsonify({
             'symbol': symbol,
@@ -144,7 +153,6 @@ def simulate_5s_chart():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 
 if __name__ == '__main__':
