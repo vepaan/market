@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 const Candlestick = ({ data }) => {
-  const chartHeight = 350; // Adjusted height to make room for axes
+  const chartHeight = 300; // Adjusted height to make room for axes
   const chartWidth = 800; // Total width of the chart
   const candleWidth = 10; // Width of each candle
   const spacing = 2; // Spacing between candles
