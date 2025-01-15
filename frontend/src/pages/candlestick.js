@@ -2,9 +2,9 @@ import React, { useState } from "react";
 
 const Candlestick = ({ data }) => {
   const chartHeight = 300; // Adjusted height to make room for axes
-  const chartWidth = 800; // Total width of the chart
+  const chartWidth = 2000; // Total width of the chart
   const candleWidth = 10; // Width of each candle
-  const spacing = 2; // Spacing between candles
+  const spacing = 10; // Spacing between candles
   const axisPadding = 40; // Space for axes and labels
   const maxWidth = 1200; // Maximum width before scrolling is triggered
   const additionalHeight = chartHeight * 0.1; // 10% extra height for vertical scroll

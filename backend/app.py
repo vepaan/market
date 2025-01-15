@@ -115,9 +115,18 @@ def calculate_historical_volatility(prices):
     annualized_volatility = daily_volatility * np.sqrt(252) #252 if computing the annualized volatility  but 15 for the latest trends
     return annualized_volatility
 
+# Global trend state
+trend_state = {'active_trend': None, 'trend_counter': 0}
+
 @app.route('/api/simulate-price-5s', methods=['GET'])
 def simulate_5s_chart():
+    global trend_state
     symbol = request.args.get('symbol', 'AAPL')
+    bull_probability = 1  # 30% chance of entering a bull trend
+    bull_duration = 10  # Bull trend lasts for 10 data points
+    bear_probability = 0.6  # 20% chance of entering a bear trend
+    bear_duration = 8  # Bear trend lasts for 8 data points
+
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
     theta = 0.1  # Mean reversion speed
     random_factor = 0.02  # Random shock factor for random price movement (adjust as needed)
@@ -131,24 +140,49 @@ def simulate_5s_chart():
 
         current_price = hist['Close'].iloc[-1]  # Use the latest close price
         mu = hist['Close'].mean()  # Mean price over the period
-        sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility (multiplied for more significant effect)
+        sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility
+
+        # Determine the current trend
+        if trend_state['trend_counter'] == 0:
+            # No active trend, decide randomly to start a bull or bear trend
+            if random.random() < bull_probability:
+                trend_state['active_trend'] = 'bull'
+                trend_state['trend_counter'] = bull_duration
+            elif random.random() < bear_probability:
+                trend_state['active_trend'] = 'bear'
+                trend_state['trend_counter'] = bear_duration
+
+        # Adjust price movement based on the trend
+        if trend_state['active_trend'] == 'bull':
+            trend_bias = 0.03 * current_price  # Add a positive bias
+            trend_state['trend_counter'] -= 1
+        elif trend_state['active_trend'] == 'bear':
+            trend_bias = -0.03 * current_price  # Add a negative bias
+            trend_state['trend_counter'] -= 1
+        else:
+            trend_bias = 0  # No trend bias
+
+        # Reset trend if duration is over
+        if trend_state['trend_counter'] <= 0:
+            trend_state['active_trend'] = None
 
         # Generate the next data point using Ornstein-Uhlenbeck
         mean_reverting_term = theta * (mu - current_price) * dt
         stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
 
         # Randomly introduce rises and dips
-        random_shock = np.random.choice([1, -1]) * random_factor * current_price * np.random.normal(0, 1)
+        random_shock = random.choice([1, -1]) * random_factor * current_price * random.normalvariate(0, 1)
 
-        # Calculate the new price with added random movement
-        new_price = current_price + mean_reverting_term + stochastic_term + random_shock
+        # Calculate the new price with added random movement and trend bias
+        new_price = current_price + mean_reverting_term + stochastic_term + random_shock + trend_bias
 
         # Ensure the new price doesn't go negative
         new_price = max(new_price, 0.01)
 
         return jsonify({
-            'symbol': symbol,
+            'symbol': 'AAPL',
             'new_price': round(new_price, 2),
+            'trend': trend_state['active_trend'],
         })
 
     except Exception as e:

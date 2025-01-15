@@ -15,56 +15,76 @@ function Market() {
   const [name, setName] = useState(""); // State for the ticker input
   const [currentPrice, setCurrentPrice] = useState(null); // Track the current price
   const [simulationInterval, setSimulationInterval] = useState(null); // For 5s simulation
+  const [trendState, setTrendState] = useState("none"); // Tracks the current trend
+  const [trendCounter, setTrendCounter] = useState(0); // Tracks the remaining trend duration
 
   const fetchStockData = async () => {
     try {
       if (timeRange === "5s") {
         // Fetch the initial price
         const response = await axios.get(
-            "http://127.0.0.1:5000/api/simulate-price-5s",
-            { params: { symbol: ticker } }
+          "http://127.0.0.1:5000/api/simulate-price-5s",
+          {
+            params: {
+              symbol: ticker,
+              trend_state: trendState,
+              trend_counter: trendCounter,
+            },
+          }
         );
-    
+
         const closePrice = response.data.new_price; // Extract initial price
         setCandlestickData([{ start: closePrice, end: closePrice }]);
-    
+        setTrendState(response.data.trend);
+        setTrendCounter(response.data.trend_counter);
+
         clearInterval(simulationInterval); // Clear any existing interval
-    
+
         const interval = setInterval(async () => {
-            try {
-                // Fetch the next simulated price from the API
-                const simulatedResponse = await axios.get(
-                    "http://127.0.0.1:5000/api/simulate-price-5s",
-                    { params: { symbol: ticker } }
-                );
-    
-                const simulatedPrice = simulatedResponse.data.new_price;
-    
-                // Update candlestick data
-                setCandlestickData((prevData) => {
-                    const lastPrice = prevData.at(-1).end;
-    
-                    // Use the simulated price directly
-                    return [
-                        ...prevData,
-                        { start: lastPrice, end: simulatedPrice },
-                    ].slice(-60); // Keep the last 60 candles (5 minutes)
-                });
-            } catch (error) {
-                console.error("Error fetching simulated price:", error);
-            }
+          try {
+            // Fetch the next simulated price from the API
+            const simulatedResponse = await axios.get(
+              "http://127.0.0.1:5000/api/simulate-price-5s",
+              {
+                params: {
+                  symbol: ticker,
+                  trend_state: trendState,
+                  trend_counter: trendCounter,
+                },
+              }
+            );
+
+            const simulatedPrice = simulatedResponse.data.new_price;
+
+            // Update candlestick data
+            setCandlestickData((prevData) => {
+              const lastPrice = prevData.at(-1).end;
+
+              // Use the simulated price directly
+              return [
+                ...prevData,
+                { start: lastPrice, end: simulatedPrice },
+              ].slice(-60); // Keep the last 60 candles (5 minutes)
+            });
+
+            // Update trend state and counter for the next API call
+            setTrendState(simulatedResponse.data.trend);
+            setTrendCounter(simulatedResponse.data.trend_counter);
+          } catch (error) {
+            console.error("Error fetching simulated price:", error);
+          }
         }, 250);
-    
+
         setSimulationInterval(interval);
-    }
-    else {
+      } else {
         const response = await axios.get(
           "http://127.0.0.1:5000/api/stock-data",
           { params: { ticker, range: timeRange } }
         );
 
         const data = response.data;
-        const isIncreasing = data.prices[data.prices.length - 1] > data.prices[0];
+        const isIncreasing =
+          data.prices[data.prices.length - 1] > data.prices[0];
 
         const companyResponse = await axios.get(
           "http://127.0.0.1:5000/api/company-name",
