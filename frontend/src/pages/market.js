@@ -73,7 +73,7 @@ function Market() {
           } catch (error) {
             console.error("Error fetching simulated price:", error);
           }
-        }, 250);
+        }, 1000);
 
         setSimulationInterval(interval);
       } else {

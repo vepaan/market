@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const Candlestick = ({ data }) => {
   const chartHeight = 300;
@@ -30,11 +30,21 @@ const Candlestick = ({ data }) => {
   const centerPoints = data.map((candle, index) => {
     const x = axisPadding + index * totalCandleWidth + candleWidth / 2;
     const centerY =
-      chartHeight -
+      chartHeight - 
       (((candle.start + candle.end) / 2 - chartMinY) / priceRange) *
         chartHeight;
     return { x, y: centerY };
   });
+
+  // Random wick height storage
+  const wickHeightsRef = useRef([]);
+
+  // Initialize wick heights on first render and store them
+  useEffect(() => {
+    wickHeightsRef.current = data.map(() =>
+      Math.random() * (0.5 - 0.3) + 0.3
+    );
+  }, [data]);
 
   return (
     <div
@@ -125,23 +135,44 @@ const Candlestick = ({ data }) => {
         {data.map((candle, index) => {
           const x = axisPadding + index * totalCandleWidth;
           const startY =
-            chartHeight -
-            ((candle.start - chartMinY) / priceRange) * chartHeight;
+            chartHeight - ((candle.start - chartMinY) / priceRange) * chartHeight;
           const endY =
-            chartHeight -
-            ((candle.end - chartMinY) / priceRange) * chartHeight;
+            chartHeight - ((candle.end - chartMinY) / priceRange) * chartHeight;
           const height = Math.abs(startY - endY);
           const color = candle.end >= candle.start ? "#10b981" : "#ef4444";
 
+          // Wick calculations: Retrieve the pre-calculated wick height for this candle
+          const wickHeight = wickHeightsRef.current[index] * height;
+
           return (
-            <rect
-              key={index}
-              x={x}
-              y={Math.min(startY, endY)}
-              width={candleWidth}
-              height={height}
-              fill={color}
-            />
+            <g key={index}>
+              {/* Candlestick Body */}
+              <rect
+                x={x}
+                y={Math.min(startY, endY)}
+                width={candleWidth}
+                height={height}
+                fill={color}
+              />
+              {/* Wick for the start of the candle */}
+              <line
+                x1={x + candleWidth / 2}
+                y1={Math.min(startY, endY) - wickHeight / 2} // Extend above the candle body
+                x2={x + candleWidth / 2}
+                y2={Math.min(startY, endY) + wickHeight / 2} // Extend below the candle body
+                stroke={color}
+                strokeWidth={2}
+              />
+              {/* Wick for the end of the candle */}
+              <line
+                x1={x + candleWidth / 2}
+                y1={Math.max(startY, endY) - wickHeight / 2} // Extend above the candle body
+                x2={x + candleWidth / 2}
+                y2={Math.max(startY, endY) + wickHeight / 2} // Extend below the candle body
+                stroke={color}
+                strokeWidth={2}
+              />
+            </g>
           );
         })}
 
