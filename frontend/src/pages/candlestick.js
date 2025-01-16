@@ -26,12 +26,7 @@ const Candlestick = ({ data }) => {
     }
   };
 
-  // Precalculate wick heights and store them
-  const calculatedWicks = data.map(() => {
-    const randomWickOffset = Math.random() * 0.3 + 0.2; // Random value between 0.2 and 0.5
-    return randomWickOffset;
-  });
-
+  // Calculate center points for the trend line
   const centerPoints = data.map((candle, index) => {
     const x = axisPadding + index * totalCandleWidth + candleWidth / 2;
     const centerY =
@@ -138,28 +133,15 @@ const Candlestick = ({ data }) => {
           const height = Math.abs(startY - endY);
           const color = candle.end >= candle.start ? "#10b981" : "#ef4444";
 
-          const wickOffset = calculatedWicks[index];
-          const wickTop = startY - wickOffset * height;
-          const wickBottom = endY + wickOffset * height;
-
           return (
-            <g key={index}>
-              <rect
-                x={x}
-                y={Math.min(startY, endY)} // Body position
-                width={candleWidth}
-                height={height} // Body height
-                fill={color}
-              />
-              <rect
-                x={x + candleWidth / 2 - 1} // Centered wick position
-                y={Math.min(wickTop, wickBottom)} // Top of the wick
-                width={2} // Wick width
-                height={Math.abs(wickTop - wickBottom)} // Wick height
-                fill={color}
-              />
-            </g>
-
+            <rect
+              key={index}
+              x={x}
+              y={Math.min(startY, endY)}
+              width={candleWidth}
+              height={height}
+              fill={color}
+            />
           );
         })}
 
