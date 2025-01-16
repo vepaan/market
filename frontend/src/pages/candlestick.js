@@ -144,23 +144,22 @@ const Candlestick = ({ data }) => {
 
           return (
             <g key={index}>
-              {/* Main Candle */}
               <rect
                 x={x}
-                y={Math.min(startY, endY)}
+                y={Math.min(startY, endY)} // Body position
                 width={candleWidth}
-                height={height}
+                height={height} // Body height
                 fill={color}
               />
-              {/* Wick */}
               <rect
-                x={x + candleWidth / 2 - 1}
-                y={Math.min(wickTop, wickBottom)}
-                width={2}
-                height={Math.abs(wickTop - wickBottom)}
+                x={x + candleWidth / 2 - 1} // Centered wick position
+                y={Math.min(wickTop, wickBottom)} // Top of the wick
+                width={2} // Wick width
+                height={Math.abs(wickTop - wickBottom)} // Wick height
                 fill={color}
               />
             </g>
+
           );
         })}
 
