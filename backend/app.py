@@ -112,61 +112,61 @@ def get_bid_ask():
 def calculate_historical_volatility(prices):
     log_returns = np.log(prices / prices.shift(1)).dropna()
     daily_volatility = np.std(log_returns)
-    annualized_volatility = daily_volatility * np.sqrt(252) #252 if computing the annualized volatility  but 15 for the latest trends
+    annualized_volatility = daily_volatility * np.sqrt(252)  # 252 if computing the annualized volatility
     return annualized_volatility
 
-# Global trend state
-trend_state = {'active_trend': None, 'trend_counter': 0}
-
-@app.route('/api/simulate-price-5s', methods=['GET'])
-def simulate_5s_chart():
-    global trend_state
-    symbol = request.args.get('symbol', 'AAPL')
-    bull_probability = 1  # 30% chance of entering a bull trend
+def simulate_price_sequence(symbol):
+    # Bull and Bear trend probabilities and duration
+    bull_probability = 0.3  # 30% chance of entering a bull trend
     bull_duration = 10  # Bull trend lasts for 10 data points
-    bear_probability = 0.6  # 20% chance of entering a bear trend
+    bear_probability = 0.6  # 60% chance of entering a bear trend
     bear_duration = 8  # Bear trend lasts for 8 data points
 
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
     theta = 0.1  # Mean reversion speed
     random_factor = 0.02  # Random shock factor for random price movement (adjust as needed)
 
-    try:
-        # Fetch the last closing price as the starting point
-        stock = yf.Ticker(symbol)
-        hist = stock.history(period="1mo", interval="1d")
-        if hist.empty:
-            raise ValueError("No historical data available.")
+    # Fetch the last closing price as the starting point
+    stock = yf.Ticker(symbol)
+    hist = stock.history(period="1mo", interval="1d")
+    if hist.empty:
+        raise ValueError("No historical data available.")
 
-        current_price = hist['Close'].iloc[-1]  # Use the latest close price
-        mu = hist['Close'].mean()  # Mean price over the period
-        sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility
+    current_price = hist['Close'].iloc[-1]  # Use the latest close price
+    mu = hist['Close'].mean()  # Mean price over the period
+    sigma = calculate_historical_volatility(hist['Close'])  # Annualized volatility
 
-        # Determine the current trend
-        if trend_state['trend_counter'] == 0:
+    prices = [current_price]  # Initialize prices list with the latest close price
+
+    trend_state = None  # Track current trend (None, 'bull', or 'bear')
+    trend_counter = 0  # Track the number of data points in the current trend
+
+    for _ in range(719):  # We need to generate 719 additional prices to make a total of 720
+        # Handle trend logic
+        if trend_counter == 0:
             # No active trend, decide randomly to start a bull or bear trend
             if random.random() < bull_probability:
-                trend_state['active_trend'] = 'bull'
-                trend_state['trend_counter'] = bull_duration
+                trend_state = 'bull'
+                trend_counter = bull_duration
             elif random.random() < bear_probability:
-                trend_state['active_trend'] = 'bear'
-                trend_state['trend_counter'] = bear_duration
+                trend_state = 'bear'
+                trend_counter = bear_duration
 
         # Adjust price movement based on the trend
-        if trend_state['active_trend'] == 'bull':
-            trend_bias = 0.03 * current_price  # Add a positive bias
-            trend_state['trend_counter'] -= 1
-        elif trend_state['active_trend'] == 'bear':
-            trend_bias = -0.03 * current_price  # Add a negative bias
-            trend_state['trend_counter'] -= 1
+        if trend_state == 'bull':
+            trend_bias = 0.03 * current_price  # Constant increase for bull trend
+            trend_counter -= 1
+        elif trend_state == 'bear':
+            trend_bias = -0.03 * current_price  # Constant decrease for bear trend
+            trend_counter -= 1
         else:
             trend_bias = 0  # No trend bias
 
         # Reset trend if duration is over
-        if trend_state['trend_counter'] <= 0:
-            trend_state['active_trend'] = None
+        if trend_counter <= 0:
+            trend_state = None
 
-        # Generate the next data point using Ornstein-Uhlenbeck
+        # Generate the next data point using Ornstein-Uhlenbeck and randomness
         mean_reverting_term = theta * (mu - current_price) * dt
         stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
 
@@ -179,15 +179,27 @@ def simulate_5s_chart():
         # Ensure the new price doesn't go negative
         new_price = max(new_price, 0.01)
 
+        # Append the new price to the list and update current price
+        prices.append(round(new_price, 2))
+        current_price = new_price
+
+    return prices
+
+@app.route('/api/simulate-price-5s', methods=['GET'])
+def simulate_5s_chart():
+    symbol = request.args.get('symbol', 'AAPL')
+    
+    try:
+        # Generate 720 price values based on the simulation
+        prices = simulate_price_sequence(symbol)
+
         return jsonify({
-            'symbol': 'AAPL',
-            'new_price': round(new_price, 2),
-            'trend': trend_state['active_trend'],
+            'symbol': symbol,
+            'prices': prices,  # Return the array of 720 prices
         })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)
