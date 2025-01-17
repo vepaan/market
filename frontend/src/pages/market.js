@@ -54,7 +54,7 @@ function Market() {
               return [
                 ...prevData,
                 { start: lastPrice, end: nextPrice },
-              ].slice(-60); // Keep the last 60 candles (5 minutes)
+              ].slice(-80); // Keep the last 60 candles (5 minutes)
             });
       
             currentIndex += 1;
