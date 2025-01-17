@@ -117,9 +117,9 @@ def calculate_historical_volatility(prices):
 
 def simulate_price_sequence(symbol):
     # Bull and Bear trend probabilities and duration
-    bull_probability = 0.3
+    bull_probability = 0.2
     bull_duration = 10  # Bull trend lasts for 10 data points
-    bear_probability = 0.3
+    bear_probability = 0.2
     bear_duration = 8  # Bear trend lasts for 8 data points
 
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
