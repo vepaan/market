@@ -61,7 +61,7 @@ function Market() {
           } else {
             clearInterval(interval);
           }
-        }, 500);
+        }, 5000);
 
         setSimulationInterval(interval);
       } else {

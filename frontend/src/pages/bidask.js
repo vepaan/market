@@ -63,7 +63,7 @@ function BidAskTable({ ticker, price }) {
       if (ticker && price) {
         fetchBidAskData();
       }
-    }, 2000);
+    }, 1500);
 
     return () => {
       clearInterval(intervalId); // Cleanup interval when component unmounts
