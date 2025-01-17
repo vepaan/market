@@ -21,59 +21,47 @@ function Market() {
   const fetchStockData = async () => {
     try {
       if (timeRange === "5s") {
-        // Fetch the initial price
-        const response = await axios.get(
-          "http://127.0.0.1:5000/api/simulate-price-5s",
-          {
-            params: {
-              symbol: ticker,
-              trend_state: trendState,
-              trend_counter: trendCounter,
-            },
-          }
-        );
-
-        const closePrice = response.data.new_price; // Extract initial price
-        setCandlestickData([{ start: closePrice, end: closePrice }]);
-        setTrendState(response.data.trend);
-        setTrendCounter(response.data.trend_counter);
-
-        clearInterval(simulationInterval); // Clear any existing interval
-
-        const interval = setInterval(async () => {
-          try {
-            // Fetch the next simulated price from the API
-            const simulatedResponse = await axios.get(
-              "http://127.0.0.1:5000/api/simulate-price-5s",
-              {
-                params: {
-                  symbol: ticker,
-                  trend_state: trendState,
-                  trend_counter: trendCounter,
-                },
-              }
-            );
-
-            const simulatedPrice = simulatedResponse.data.new_price;
-
-            // Update candlestick data
+        // Fetch the 720 simulated prices
+        const response = await axios.get("http://127.0.0.1:5000/api/simulate-price-5s", {
+          params: {
+            symbol: ticker,
+          },
+        });
+      
+        const simulatedPrices = response.data.prices; // Array of 720 prices
+      
+        // Initialize candlestick data with the first price
+        setCandlestickData([{ start: simulatedPrices[0], end: simulatedPrices[0] }]);
+      
+        // Track the current index of the simulated prices
+        let currentIndex = 1;
+      
+        // Clear any existing interval
+        clearInterval(simulationInterval);
+      
+        // Set up an interval to update the candlestick chart every 5 seconds
+        const interval = setInterval(() => {
+          if (currentIndex < simulatedPrices.length) {
+            // Get the current price and the next price
+            const currentPrice = simulatedPrices[currentIndex - 1];
+            const nextPrice = simulatedPrices[currentIndex];
+      
+            // Update the candlestick data
             setCandlestickData((prevData) => {
               const lastPrice = prevData.at(-1).end;
-
-              // Use the simulated price directly
+      
+              // Add a new candlestick data point
               return [
                 ...prevData,
-                { start: lastPrice, end: simulatedPrice },
+                { start: lastPrice, end: nextPrice },
               ].slice(-60); // Keep the last 60 candles (5 minutes)
             });
-
-            // Update trend state and counter for the next API call
-            setTrendState(simulatedResponse.data.trend);
-            setTrendCounter(simulatedResponse.data.trend_counter);
-          } catch (error) {
-            console.error("Error fetching simulated price:", error);
+      
+            currentIndex += 1;
+          } else {
+            clearInterval(interval);
           }
-        }, 5000);
+        }, 500);
 
         setSimulationInterval(interval);
       } else {

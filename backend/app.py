@@ -117,14 +117,14 @@ def calculate_historical_volatility(prices):
 
 def simulate_price_sequence(symbol):
     # Bull and Bear trend probabilities and duration
-    bull_probability = 0.3  # 30% chance of entering a bull trend
+    bull_probability = 0.1  # 10% chance of entering a bull trend
     bull_duration = 10  # Bull trend lasts for 10 data points
-    bear_probability = 0.6  # 60% chance of entering a bear trend
+    bear_probability = 0.1  # 10% chance of entering a bear trend
     bear_duration = 8  # Bear trend lasts for 8 data points
 
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
     theta = 0.1  # Mean reversion speed
-    random_factor = 0.02  # Random shock factor for random price movement (adjust as needed)
+    random_drift_factor = 0.001  # Small stochastic drift to simulate natural price movement
 
     # Fetch the last closing price as the starting point
     stock = yf.Ticker(symbol)
@@ -141,7 +141,7 @@ def simulate_price_sequence(symbol):
     trend_state = None  # Track current trend (None, 'bull', or 'bear')
     trend_counter = 0  # Track the number of data points in the current trend
 
-    for _ in range(719):  # We need to generate 719 additional prices to make a total of 720
+    for _ in range(719):  # Generate 719 additional prices to make a total of 720
         # Handle trend logic
         if trend_counter == 0:
             # No active trend, decide randomly to start a bull or bear trend
@@ -154,10 +154,10 @@ def simulate_price_sequence(symbol):
 
         # Adjust price movement based on the trend
         if trend_state == 'bull':
-            trend_bias = 0.03 * current_price  # Constant increase for bull trend
+            trend_bias = 0.5 * sigma  # Upward bias, max half of the volatility
             trend_counter -= 1
         elif trend_state == 'bear':
-            trend_bias = -0.03 * current_price  # Constant decrease for bear trend
+            trend_bias = -0.5 * sigma  # Downward bias, max half of the volatility
             trend_counter -= 1
         else:
             trend_bias = 0  # No trend bias
@@ -166,15 +166,13 @@ def simulate_price_sequence(symbol):
         if trend_counter <= 0:
             trend_state = None
 
-        # Generate the next data point using Ornstein-Uhlenbeck and randomness
+        # Generate the next data point using GBM, Ornstein-Uhlenbeck mean reversion, and stochastic drift
         mean_reverting_term = theta * (mu - current_price) * dt
         stochastic_term = sigma * np.random.normal(0, 1) * np.sqrt(dt)
+        stochastic_drift = random_drift_factor * current_price * np.random.normal(0, 1)
 
-        # Randomly introduce rises and dips
-        random_shock = random.choice([1, -1]) * random_factor * current_price * random.normalvariate(0, 1)
-
-        # Calculate the new price with added random movement and trend bias
-        new_price = current_price + mean_reverting_term + stochastic_term + random_shock + trend_bias
+        # Calculate the new price with GBM, stochastic drift, and trend bias
+        new_price = current_price + mean_reverting_term + stochastic_term + trend_bias + stochastic_drift
 
         # Ensure the new price doesn't go negative
         new_price = max(new_price, 0.01)
@@ -184,6 +182,7 @@ def simulate_price_sequence(symbol):
         current_price = new_price
 
     return prices
+
 
 @app.route('/api/simulate-price-5s', methods=['GET'])
 def simulate_5s_chart():
