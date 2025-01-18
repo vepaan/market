@@ -119,7 +119,7 @@ def simulate_price_sequence(symbol):
     # Bull and Bear trend probabilities and duration
     bull_probability = 0.15
     bull_duration = 10  # Bull trend lasts for 10 data points
-    bear_probability = 0.15
+    bear_probability = 0.95
     bear_duration = 8  # Bear trend lasts for 8 data points
 
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years

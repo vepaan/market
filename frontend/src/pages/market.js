@@ -15,8 +15,8 @@ function Market() {
   const [name, setName] = useState(""); // State for the ticker input
   const [currentPrice, setCurrentPrice] = useState(null); // Track the current price
   const [simulationInterval, setSimulationInterval] = useState(null); // For 5s simulation
-  const [trendState, setTrendState] = useState("none"); // Tracks the current trend
-  const [trendCounter, setTrendCounter] = useState(0); // Tracks the remaining trend duration
+  const [is5sChart, setIs5sChart] = useState(false); // Track if it's 5s chart
+  const [initialPrice, setInitialPrice] = useState(null); // To store the first price for percent change calculation
 
   const fetchStockData = async () => {
     try {
@@ -27,36 +27,41 @@ function Market() {
             symbol: ticker,
           },
         });
-      
+
         const simulatedPrices = response.data.prices; // Array of 720 prices
-      
+
         // Initialize candlestick data with the first price
         setCandlestickData([{ start: simulatedPrices[0], end: simulatedPrices[0] }]);
-      
+
+        // Set the initial price (first element)
+        setInitialPrice(simulatedPrices[0]);
+        setCurrentPrice(simulatedPrices[0]);
+
         // Track the current index of the simulated prices
         let currentIndex = 1;
-      
+
         // Clear any existing interval
         clearInterval(simulationInterval);
-      
+
         // Set up an interval to update the candlestick chart every 5 seconds
         const interval = setInterval(() => {
           if (currentIndex < simulatedPrices.length) {
             // Get the current price and the next price
             const currentPrice = simulatedPrices[currentIndex - 1];
             const nextPrice = simulatedPrices[currentIndex];
-      
+
             // Update the candlestick data
             setCandlestickData((prevData) => {
               const lastPrice = prevData.at(-1).end;
-      
+
               // Add a new candlestick data point
               return [
                 ...prevData,
                 { start: lastPrice, end: nextPrice },
-              ].slice(-80); // Keep the last 60 candles (5 minutes)
+              ].slice(-80); // Keep the last 80 candles (5 minutes)
             });
-      
+
+            setCurrentPrice(nextPrice); // Update current price dynamically
             currentIndex += 1;
           } else {
             clearInterval(interval);
@@ -64,6 +69,7 @@ function Market() {
         }, 5000);
 
         setSimulationInterval(interval);
+        setIs5sChart(true);
       } else {
         const response = await axios.get(
           "http://127.0.0.1:5000/api/stock-data",
@@ -113,6 +119,7 @@ function Market() {
         });
 
         setCurrentPrice(data.prices[data.prices.length - 1]);
+        setIs5sChart(false);
       }
     } catch (error) {
       console.error("Error fetching stock data:", error);
@@ -125,6 +132,12 @@ function Market() {
       clearInterval(simulationInterval); // Clear simulation when not in 5s range
       setSimulationInterval(null);
     }
+
+    // Reset the price values when switching to a different time range
+    if (timeRange !== "5s") {
+      setCurrentPrice(null);
+      setInitialPrice(null); // Reset the initial price when not in 5s range
+    }
   }, [ticker, timeRange]);
 
   const handleButtonClick = (range) => {
@@ -136,6 +149,21 @@ function Market() {
     setTicker(name.toUpperCase());
   };
 
+  // Percent change calculation based on the initial price for the 5s chart
+  const calculatePercentChange = () => {
+    if (initialPrice === null || currentPrice === null) return 0;
+    const change = ((currentPrice - initialPrice) / initialPrice) * 100;
+    return change.toFixed(2);
+  };
+
+  const calculateUSDChange = () => {
+    if (initialPrice === null || currentPrice === null) return 0;
+    let updatedPrice = (currentPrice - initialPrice).toFixed(2);
+    if (updatedPrice < 0) return updatedPrice + " USD";
+    if (updatedPrice > 0) return "+" + updatedPrice + " USD";
+    return updatedPrice;
+  };
+
   return (
     <div className="market">
       <div className="chart-section">
@@ -144,41 +172,69 @@ function Market() {
           {chartData && chartData.datasets ? (
             <>
               <h3 className="current-price">
-                ${chartData.datasets[0].data.at(-1).toFixed(2)}
+                ${currentPrice ? currentPrice.toFixed(2) : "Loading..."}
               </h3>
               <p
                 className="percent-change"
                 style={{
                   color:
-                    chartData.datasets[0].data.at(-1) >
-                    chartData.datasets[0].data[0]
+                    currentPrice &&
+                    chartData.datasets[0].data[chartData.datasets[0].data.length - 1] >
+                      chartData.datasets[0].data[0]
                       ? "#10b981"
                       : "#ef4444",
                 }}
               >
-                {chartData.datasets[0].data.at(-1) >
-                chartData.datasets[0].data[0]
-                  ? "+"
-                  : ""}
-                {(
-                  chartData.datasets[0].data.at(-1) -
-                  chartData.datasets[0].data[0]
-                ).toFixed(2)}{" "}
-                USD{" "}
-                <span style={{ color: "white" }}>
-                  (
-                  {chartData.datasets[0].data.at(-1) >
-                  chartData.datasets[0].data[0]
-                    ? "+"
-                    : ""}
-                  {(
-                    ((chartData.datasets[0].data.at(-1) -
-                      chartData.datasets[0].data[0]) /
-                      chartData.datasets[0].data[0]) *
-                    100
-                  ).toFixed(2)}
-                  %)
-                </span>
+                {timeRange === "5s" ? (
+                  <>
+                    {/* USD Change */}
+                    <span
+                      style={{
+                        color:
+                          currentPrice && currentPrice - initialPrice > 0
+                            ? "#10b981" // Green for positive USD change
+                            : "#ef4444", // Red for negative USD change
+                      }}
+                    >
+                      {calculateUSDChange()}
+                    </span>{" "}
+                    {/* Percent Change */}
+                    <span
+                      style={{
+                        color: "#ffffff", // Always white for percent change
+                      }}
+                    >
+                      ({calculatePercentChange()}%)
+                    </span>
+                  </>
+                ) : null}
+
+                {/* For other time ranges */}
+                {timeRange !== "5s" && (
+                  <>
+                    {currentPrice &&
+                    chartData.datasets[0].data[chartData.datasets[0].data.length - 1] >
+                      chartData.datasets[0].data[0]
+                      ? "+"
+                      : ""}
+                    {currentPrice &&
+                      (
+                        chartData.datasets[0].data[chartData.datasets[0].data.length - 1] -
+                        chartData.datasets[0].data[0]
+                      ).toFixed(2)}{" "}
+                    USD{" "}
+                    <span style={{ color: "white" }}>
+                      (
+                      {currentPrice &&
+                        (
+                          ((currentPrice - chartData.datasets[0].data[0]) /
+                            chartData.datasets[0].data[0]) *
+                        100
+                        ).toFixed(2)}
+                      %)
+                    </span>
+                  </>
+                )}
               </p>
             </>
           ) : (
@@ -192,7 +248,7 @@ function Market() {
             <p>Loading candlestick chart...</p>
           )
         ) : chartData ? (
-          <LineChart chartData={chartData} />
+          <LineChart chartData={chartData} is5sChart={is5sChart} />
         ) : (
           <p>Loading chart...</p>
         )}
