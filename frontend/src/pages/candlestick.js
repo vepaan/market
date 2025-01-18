@@ -66,29 +66,42 @@ const Candlestick = ({ data }) => {
           y1={0}
           x2={axisPadding}
           y2={chartHeight + additionalHeight}
-          stroke="red"
+          stroke="gray"
           strokeWidth={1}
         />
         {/* Y-Axis Ticks and Labels */}
+        {/* Y-Axis Ticks, Labels, and Horizontal Gridlines */}
         {[...Array(6)].map((_, i) => {
-          const yValue = chartMinY + (priceRange * (5 - i)) / 5;
-          const yPos = (chartHeight * i) / 5;
+          const yValue = chartMinY + (priceRange * (5 - i)) / 5; // Calculate the Y-axis value
+          const yPos = (chartHeight * i) / 5; // Calculate the Y-axis position
           return (
             <g key={i}>
+              {/* Horizontal Gridline */}
               <line
-                x1={axisPadding - 5}
+                x1={axisPadding} // Start at the left of the chart
+                y1={yPos} // Same Y position as the tick
+                x2={chartWidth + axisPadding} // Extend to the right edge
+                y2={yPos}
+                stroke="#a49895" // Set the gridline color to white
+                strokeWidth={1} // Set the line width
+                opacity={0.2} // Make the gridline subtle (optional)
+              />
+              {/* Tick */}
+              <line
+                x1={axisPadding - 5} // Short tick line
                 y1={yPos}
                 x2={axisPadding}
                 y2={yPos}
-                stroke="red"
+                stroke="gray"
                 strokeWidth={1}
               />
+              {/* Label */}
               <text
                 x={axisPadding - 10}
                 y={yPos + 4}
                 textAnchor="end"
                 fontSize={10}
-                fill="red"
+                fill="gray"
               >
                 {yValue.toFixed(2)}
               </text>
@@ -96,13 +109,14 @@ const Candlestick = ({ data }) => {
           );
         })}
 
+
         {/* X-Axis */}
         <line
           x1={axisPadding}
           y1={chartHeight + additionalHeight}
           x2={chartWidth + axisPadding}
           y2={chartHeight + additionalHeight}
-          stroke="red"
+          stroke="gray"
           strokeWidth={1}
         />
         {/* X-Axis Ticks and Labels */}
@@ -115,7 +129,7 @@ const Candlestick = ({ data }) => {
                 y1={chartHeight + additionalHeight}
                 x2={xPos}
                 y2={chartHeight + additionalHeight + 5}
-                stroke="red"
+                stroke="gray"
                 strokeWidth={1}
               />
               <text
@@ -123,7 +137,7 @@ const Candlestick = ({ data }) => {
                 y={chartHeight + additionalHeight + 15}
                 textAnchor="middle"
                 fontSize={10}
-                fill="red"
+                fill="gray"
               >
                 {label}
               </text>
