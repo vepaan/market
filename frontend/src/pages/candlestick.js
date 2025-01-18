@@ -1,22 +1,41 @@
 import React, { useState, useEffect, useRef } from "react";
+import "../candle.css";
 
 const Candlestick = ({ data }) => {
-  const chartHeight = 300;
+  const chartHeight = 360; // Visible height
+  const chartFullHeight = 600; // Total scrollable height
   const chartWidth = 2000;
   const candleWidth = 10;
   const spacing = 10;
   const axisPadding = 40;
   const maxWidth = 1200;
-  const additionalHeight = chartHeight * 0.1;
 
-  const chartMinY = Math.min(...data.map((d) => Math.min(d.start, d.end)));
-  const chartMaxY = Math.max(...data.map((d) => Math.max(d.start, d.end)));
-  const priceRange = chartMaxY - chartMinY;
-
-  const timeLabels = data.map((_, index) => `${index * 5}s`);
   const totalCandleWidth = candleWidth + spacing;
 
   const [isZoomed, setIsZoomed] = useState(false);
+  const [localMin, setLocalMin] = useState(0);
+  const [localMax, setLocalMax] = useState(0);
+
+  // Random wick heights storage
+  const wickHeightsRef = useRef([]);
+
+  // Initialize wick heights on first render and store them
+  useEffect(() => {
+    wickHeightsRef.current = data.map(() => Math.random() * (0.5 - 0.3) + 0.3);
+  }, [data]);
+
+  useEffect(() => {
+    // Calculate the local min and max values dynamically
+    const visibleData = data.slice(0, chartWidth / totalCandleWidth); // Adjust for visible width
+    const visibleMin = Math.min(...visibleData.map((d) => Math.min(d.start, d.end)));
+    const visibleMax = Math.max(...visibleData.map((d) => Math.max(d.start, d.end)));
+
+    const extendedMin = visibleMin - (visibleMin * 0.0005);
+    const extendedMax = visibleMax + (visibleMax * 0.0005);
+
+    setLocalMin(extendedMin);
+    setLocalMax(extendedMax);
+  }, [data, chartWidth]);
 
   const handleZoom = (e) => {
     if (e.deltaY < 0 && chartWidth < maxWidth) {
@@ -26,25 +45,20 @@ const Candlestick = ({ data }) => {
     }
   };
 
-  // Calculate center points for the trend line
+  // Generate dynamic Y-axis labels
+  const yAxisLabels = [...Array(10)].map((_, i) =>
+    (localMax - ((localMax - localMin) * i) / 9).toFixed(2)
+  );
+
+  // Calculate center points for the polyline (trend line)
   const centerPoints = data.map((candle, index) => {
     const x = axisPadding + index * totalCandleWidth + candleWidth / 2;
     const centerY =
-      chartHeight - 
-      (((candle.start + candle.end) / 2 - chartMinY) / priceRange) *
-        chartHeight;
+      chartFullHeight -
+      (((candle.start + candle.end) / 2 - localMin) / (localMax - localMin)) *
+        chartFullHeight;
     return { x, y: centerY };
   });
-
-  // Random wick height storage
-  const wickHeightsRef = useRef([]);
-
-  // Initialize wick heights on first render and store them
-  useEffect(() => {
-    wickHeightsRef.current = data.map(() =>
-      Math.random() * (0.5 - 0.3) + 0.3
-    );
-  }, [data]);
 
   return (
     <div
@@ -52,43 +66,43 @@ const Candlestick = ({ data }) => {
         overflow: "auto",
         marginTop: "13px",
         width: "100%",
-        height: chartHeight + additionalHeight + axisPadding,
+        height: chartHeight + 40, // Limit visible height
       }}
       onWheel={handleZoom}
+      className="scroll-container"
     >
       <svg
         width={isZoomed ? maxWidth : chartWidth + axisPadding}
-        height={chartHeight + additionalHeight + axisPadding}
+        height={chartFullHeight + 40} // Full scrollable height
       >
         {/* Y-Axis */}
         <line
           x1={axisPadding}
           y1={0}
           x2={axisPadding}
-          y2={chartHeight + additionalHeight}
+          y2={chartFullHeight}
           stroke="gray"
           strokeWidth={1}
         />
-        {/* Y-Axis Ticks and Labels */}
-        {/* Y-Axis Ticks, Labels, and Horizontal Gridlines */}
-        {[...Array(6)].map((_, i) => {
-          const yValue = chartMinY + (priceRange * (5 - i)) / 5; // Calculate the Y-axis value
-          const yPos = (chartHeight * i) / 5; // Calculate the Y-axis position
+
+        {/* Dynamic Y-Axis Ticks and Labels */}
+        {yAxisLabels.map((label, i) => {
+          const yPos = (chartFullHeight * i) / 9;
           return (
             <g key={i}>
               {/* Horizontal Gridline */}
               <line
-                x1={axisPadding} // Start at the left of the chart
-                y1={yPos} // Same Y position as the tick
-                x2={chartWidth + axisPadding} // Extend to the right edge
+                x1={axisPadding}
+                y1={yPos}
+                x2={chartWidth + axisPadding}
                 y2={yPos}
-                stroke="#a49895" // Set the gridline color to white
-                strokeWidth={1} // Set the line width
-                opacity={0.2} // Make the gridline subtle (optional)
+                stroke="#a49895"
+                strokeWidth={1}
+                opacity={0.2}
               />
               {/* Tick */}
               <line
-                x1={axisPadding - 5} // Short tick line
+                x1={axisPadding - 5}
                 y1={yPos}
                 x2={axisPadding}
                 y2={yPos}
@@ -103,43 +117,43 @@ const Candlestick = ({ data }) => {
                 fontSize={10}
                 fill="gray"
               >
-                {yValue.toFixed(2)}
+                {label}
               </text>
             </g>
           );
         })}
 
-
         {/* X-Axis */}
         <line
           x1={axisPadding}
-          y1={chartHeight + additionalHeight}
+          y1={chartFullHeight}
           x2={chartWidth + axisPadding}
-          y2={chartHeight + additionalHeight}
+          y2={chartFullHeight}
           stroke="gray"
           strokeWidth={1}
         />
+
         {/* X-Axis Ticks and Labels */}
-        {timeLabels.map((label, i) => {
+        {data.map((_, i) => {
           const xPos = axisPadding + i * totalCandleWidth;
           return (
             <g key={i}>
               <line
                 x1={xPos}
-                y1={chartHeight + additionalHeight}
+                y1={chartFullHeight}
                 x2={xPos}
-                y2={chartHeight + additionalHeight + 5}
+                y2={chartFullHeight + 5}
                 stroke="gray"
                 strokeWidth={1}
               />
               <text
                 x={xPos}
-                y={chartHeight + additionalHeight + 15}
+                y={chartFullHeight + 15}
                 textAnchor="middle"
                 fontSize={10}
                 fill="gray"
               >
-                {label}
+                {`${i * 5}s`}
               </text>
             </g>
           );
@@ -149,9 +163,11 @@ const Candlestick = ({ data }) => {
         {data.map((candle, index) => {
           const x = axisPadding + index * totalCandleWidth;
           const startY =
-            chartHeight - ((candle.start - chartMinY) / priceRange) * chartHeight;
+            chartFullHeight -
+            ((candle.start - localMin) / (localMax - localMin)) * chartFullHeight;
           const endY =
-            chartHeight - ((candle.end - chartMinY) / priceRange) * chartHeight;
+            chartFullHeight -
+            ((candle.end - localMin) / (localMax - localMin)) * chartFullHeight;
           const height = Math.abs(startY - endY);
           const color = candle.end >= candle.start ? "#10b981" : "#ef4444";
 
@@ -160,7 +176,6 @@ const Candlestick = ({ data }) => {
 
           return (
             <g key={index}>
-              {/* Candlestick Body */}
               <rect
                 x={x}
                 y={Math.min(startY, endY)}
@@ -168,21 +183,19 @@ const Candlestick = ({ data }) => {
                 height={height}
                 fill={color}
               />
-              {/* Wick for the start of the candle */}
               <line
                 x1={x + candleWidth / 2}
-                y1={Math.min(startY, endY) - wickHeight / 2} // Extend above the candle body
+                y1={Math.min(startY, endY) - wickHeight / 2}
                 x2={x + candleWidth / 2}
-                y2={Math.min(startY, endY) + wickHeight / 2} // Extend below the candle body
+                y2={Math.min(startY, endY) + wickHeight / 2}
                 stroke={color}
                 strokeWidth={2}
               />
-              {/* Wick for the end of the candle */}
               <line
                 x1={x + candleWidth / 2}
-                y1={Math.max(startY, endY) - wickHeight / 2} // Extend above the candle body
+                y1={Math.max(startY, endY) - wickHeight / 2}
                 x2={x + candleWidth / 2}
-                y2={Math.max(startY, endY) + wickHeight / 2} // Extend below the candle body
+                y2={Math.max(startY, endY) + wickHeight / 2}
                 stroke={color}
                 strokeWidth={2}
               />
