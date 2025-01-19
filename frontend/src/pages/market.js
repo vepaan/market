@@ -58,7 +58,7 @@ function Market() {
               return [
                 ...prevData,
                 { start: lastPrice, end: nextPrice },
-              ].slice(-80); // Keep the last 80 candles (5 minutes)
+              ].slice(-90); // Keep the last 80 candles (5 minutes)
             });
 
             setCurrentPrice(nextPrice); // Update current price dynamically

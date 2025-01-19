@@ -112,14 +112,14 @@ def get_bid_ask():
 def calculate_historical_volatility(prices):
     log_returns = np.log(prices / prices.shift(1)).dropna()
     daily_volatility = np.std(log_returns)
-    annualized_volatility = daily_volatility * np.sqrt(252)  # 252 if computing the annualized volatility
+    annualized_volatility = daily_volatility * np.sqrt(15)  # 252 if computing the annualized volatility
     return annualized_volatility
 
 def simulate_price_sequence(symbol):
     # Bull and Bear trend probabilities and duration
     bull_probability = 0.15
     bull_duration = 10  # Bull trend lasts for 10 data points
-    bear_probability = 0.95
+    bear_probability = 0.15
     bear_duration = 8  # Bear trend lasts for 8 data points
 
     dt = 5 / (252 * 6.5 * 3600)  # Convert 5 seconds to trading years
