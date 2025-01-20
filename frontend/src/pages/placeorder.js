@@ -8,6 +8,11 @@ function PlaceOrder() {
   const [duration, setDuration] = useState("day");
   const [stoploss, setStopLoss] = useState(0);
   const [leverage, setLeverage] = useState(1);
+  const [selectedAction, setSelectedAction] = useState(null);
+
+  const handleSelect = (action) => {
+    setSelectedAction(action);
+  };
 
   const handleSubmit = (e, action) => {
     e.preventDefault();
@@ -20,12 +25,38 @@ function PlaceOrder() {
       leverage,
       action,
     };
-    console.log(orderDetails);  // Here you can handle the form submission
+    console.log(orderDetails);  // Here we can handle the form submission
   };
 
   return (
     <div className="order-form">
       <form className="order-form-space">
+
+        {/* Action Buttons */}
+        <div className="form-row">
+          <button
+            type="button"
+            className={`button ${selectedAction === "buy" ? "selected" : ""}`}
+            onClick={() => handleSelect("buy")}
+          >
+            Buy
+          </button>
+          <button
+            type="button"
+            className={`button ${selectedAction === "sell" ? "selected" : ""}`}
+            onClick={() => handleSelect("sell")}
+          >
+            Sell
+          </button>
+          <button
+            type="button"
+            className={`button ${selectedAction === "shortSell" ? "selected" : ""}`}
+            onClick={() => handleSelect("shortSell")}
+          >
+            Short Sell
+          </button>
+        </div>
+
         {/* Quantity and Price */}
         <div className="form-row">
           <div className="input-field">
@@ -115,31 +146,16 @@ function PlaceOrder() {
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Submit order Button */}
         <div className="form-row">
           <button
             type="submit"
-            className="button"
-            onClick={(e) => handleSubmit(e, "buy")}
+            className='execute-button'
+            onClick={(e) => handleSubmit(e, "executed")}
           >
-            Buy
-          </button>
-          <button
-            type="submit"
-            className="button"
-            onClick={(e) => handleSubmit(e, "sell")}
-          >
-            Sell
-          </button>
-          <button
-            type="submit"
-            className="button"
-            onClick={(e) => handleSubmit(e, "shortSell")}
-          >
-            Short Sell
+            Execute Order
           </button>
         </div>
-
 
       </form>
     </div>

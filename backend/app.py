@@ -155,10 +155,10 @@ def simulate_price_sequence(symbol):
 
         # Adjust price movement based on the trend
         if trend_state == 'bull':
-            trend_bias = 0.5 * sigma  # Upward bias, max half of the volatility
+            trend_bias = 0.8 * sigma  # Upward bias, max .80 of the volatility
             trend_counter -= 1
         elif trend_state == 'bear':
-            trend_bias = -0.5 * sigma  # Downward bias, max half of the volatility
+            trend_bias = -0.8 * sigma  # Downward bias, max .80 of the volatility
             trend_counter -= 1
         else:
             trend_bias = 0  # No trend bias
