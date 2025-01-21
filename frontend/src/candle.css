@@ -9,8 +9,8 @@
   }
   
   .scroll-container::-webkit-scrollbar-thumb {
-    background-color: gray; /* Scrollbar thumb color */
-    border-radius: 4px; /* Rounded scrollbar */
+    background-color: gray; 
+    border-radius: 4px; 
   }
   
   .scroll-container::-webkit-scrollbar-track {
