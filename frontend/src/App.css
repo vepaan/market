@@ -184,7 +184,9 @@
 
 .search-bar-box{
   padding-left: 30px;
-  margin-top: 20px;
+  width: 100%;
+  background-color: black;
+  padding-bottom: 40px;
 }
 
 .search-bar{
@@ -281,3 +283,7 @@
   background-color: rgb(14, 13, 19);
 }
 
+.exposure{
+  color: white;
+  margin-top: 10px;
+}

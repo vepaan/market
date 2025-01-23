@@ -263,6 +263,9 @@ function Market() {
             </button>
           ))}
         </div>
+        <div className="exposure"><h2>Your Exposure</h2></div>
+      </div>
+      <div className="order-section">
         <div className="search-bar-box">
           <input
             onChange={(e) => setName(e.target.value)}
@@ -273,8 +276,6 @@ function Market() {
           />
           <button onClick={handleTickerChange}>Search</button>
         </div>
-      </div>
-      <div className="order-section">
         <div className="bid-ask-title">Market</div>
         <BidAskTable ticker={ticker} price={currentPrice} className="bid-ask" />
         <div className="place-order-title">Place Order</div>
