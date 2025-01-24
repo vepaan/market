@@ -186,3 +186,9 @@
         flex: 1 1 100%;
     }
 }
+
+.order-type-disabled {
+    background-color: #222222;
+    color: #6b7280;
+    cursor: not-allowed;
+}

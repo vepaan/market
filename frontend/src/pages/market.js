@@ -263,7 +263,7 @@ function Market() {
             </button>
           ))}
         </div>
-        <div className="exposure"><h2>Your Exposure: </h2></div>
+        <div className="exposure"><h2>Net Exposure: </h2></div>
       </div>
       <div className="order-section">
         <div className="search-bar-box">

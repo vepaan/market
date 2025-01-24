@@ -75,11 +75,12 @@ function PlaceOrder() {
             <label className="label">Price</label>
             <input
               type="number"
-              className="price-box"
+              className={`price-box ${orderType === "market" ? "order-type-disabled" : ""}`}
               id="price"
               name="price"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
+              disabled={orderType === "market"}
             />
             <span className="currency-sign">$</span>
           </div>
