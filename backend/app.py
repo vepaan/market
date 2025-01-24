@@ -195,7 +195,7 @@ def simulate_5s_chart():
 
         return jsonify({
             'symbol': symbol,
-            'prices': prices,  # Return the array of 720 prices
+            'prices': prices,  # Return array
         })
 
     except Exception as e:
