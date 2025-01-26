@@ -112,7 +112,8 @@ def get_bid_ask():
 def calculate_historical_volatility(prices):
     log_returns = np.log(prices / prices.shift(1)).dropna()
     daily_volatility = np.std(log_returns)
-    annualized_volatility = daily_volatility * np.sqrt(15)  # 252 if computing the annualized volatility
+    # 10 day volatility gives better simuations
+    annualized_volatility = daily_volatility * np.sqrt(10)  # 252 if computing the annualized volatility
     return annualized_volatility
 
 def simulate_price_sequence(symbol):
@@ -178,7 +179,6 @@ def simulate_price_sequence(symbol):
         # Ensure the new price doesn't go negative
         new_price = max(new_price, 0.01)
 
-        # Append the new price to the list and update current price
         prices.append(round(new_price, 2))
         current_price = new_price
 
