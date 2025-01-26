@@ -274,7 +274,7 @@ function Market() {
             className="search-bar"
             placeholder="Enter ticker..."
           />
-          <button onClick={handleTickerChange}>Search</button>
+          <button onClick={handleTickerChange} className="ticker-submit">Search</button>
         </div>
         <div className="bid-ask-title">Market</div>
         <BidAskTable ticker={ticker} price={currentPrice} className="bid-ask" />

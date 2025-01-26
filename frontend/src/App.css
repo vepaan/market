@@ -186,12 +186,24 @@
   padding-left: 30px;
   width: 100%;
   background-color: black;
-  padding-bottom: 40px;
+  padding-bottom: 35px;
 }
 
 .search-bar{
   border-radius: 3px;
-  background-color: rgb(221, 221, 221);
+  background-color: rgb(44, 42, 42);
+  height: 18px;
+  outline: 1px solid rgb(53, 53, 53);
+  color: white;
+}
+
+.ticker-submit{
+  background-color: rgb(44, 42, 42);
+  border-radius: 3px;
+  color: white;
+  padding: 5px;
+  height: 30px;
+  margin-left: 3px;
 }
 
 .bid-ask-title{
