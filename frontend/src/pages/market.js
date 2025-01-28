@@ -276,7 +276,7 @@ function Market() {
           />
           <button onClick={handleTickerChange} className="ticker-submit">Search</button>
         </div>
-        <div className="bid-ask-title">Market</div>
+        <div className="bid-ask-title">Market/Quotes</div>
         <BidAskTable ticker={ticker} price={currentPrice} className="bid-ask" />
         <div className="place-order-title">Place Order</div>
         <PlaceOrder />
