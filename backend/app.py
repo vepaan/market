@@ -58,8 +58,10 @@ def get_company_name():
 
 @app.route('/api/valid-ticker', methods=['GET'])
 def isvalid():
-    return
-
+    ticker = request.args.get('ticker', type=str)
+    ticker = ticker.upper()
+    data = yf.Ticker(ticker).history(period='1d')
+    return not data.empty
 
 @app.route('/api/bid-ask', methods=['GET'])
 def get_bid_ask():

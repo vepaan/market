@@ -146,7 +146,7 @@ function Market() {
   };
 
   const handleTickerChange = () => {
-    if (name.toUpperCase()){
+    if (name.toUpperCase()) {
       setTicker(name.toUpperCase());
     };
   };
