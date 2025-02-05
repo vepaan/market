@@ -111,7 +111,7 @@ function PlaceOrder() {
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
             >
-              <option value="day">Day</option>
+              <option value="Session">Session</option>
               <option value="GTC">Good Til Canceled</option>
               <option value="IOC">Immediate Or Cancel</option>
               <option value="FOK">Fill Or Kill</option>
