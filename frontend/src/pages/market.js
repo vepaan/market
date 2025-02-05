@@ -146,7 +146,9 @@ function Market() {
   };
 
   const handleTickerChange = () => {
-    setTicker(name.toUpperCase());
+    if (name.toUpperCase()){
+      setTicker(name.toUpperCase());
+    };
   };
 
   // Percent change calculation based on the initial price for the 5s chart

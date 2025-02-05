@@ -54,6 +54,12 @@ def get_company_name():
         return jsonify({'companyName': company_name})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/api/valid-ticker', methods=['GET'])
+def isvalid():
+    return
+
 
 @app.route('/api/bid-ask', methods=['GET'])
 def get_bid_ask():
