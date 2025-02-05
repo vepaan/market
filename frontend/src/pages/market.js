@@ -145,9 +145,14 @@ function Market() {
     setTimeRange(range);
   };
 
-  const handleTickerChange = () => {
-    if (name.toUpperCase()) {
+  const handleTickerChange = async () => {
+    const response = await axios.get('http://127.0.0.1:5000/api/valid-ticker', {
+      params: { ticker: name.toUpperCase() },
+    });
+    if (response.data.is_valid) {
       setTicker(name.toUpperCase());
+    } else {
+      alert("Invalid ticker symbol. Please try again.");
     };
   };
 
