@@ -22,16 +22,21 @@ function Market() {
     try {
       if (timeRange === "5s") {
         // Fetch the 720 simulated prices
-        const response = await axios.get("http://127.0.0.1:5000/api/simulate-price-5s", {
-          params: {
-            symbol: ticker,
-          },
-        });
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/simulate-price-5s",
+          {
+            params: {
+              symbol: ticker,
+            },
+          }
+        );
 
         const simulatedPrices = response.data.prices; // Array of 720 prices
 
         // Initialize candlestick data with the first price
-        setCandlestickData([{ start: simulatedPrices[0], end: simulatedPrices[0] }]);
+        setCandlestickData([
+          { start: simulatedPrices[0], end: simulatedPrices[0] },
+        ]);
 
         // Set the initial price (first element)
         setInitialPrice(simulatedPrices[0]);
@@ -55,10 +60,9 @@ function Market() {
               const lastPrice = prevData.at(-1).end;
 
               // Add a new candlestick data point
-              return [
-                ...prevData,
-                { start: lastPrice, end: nextPrice },
-              ].slice(-90); // Keep the last 80 candles (5 minutes)
+              return [...prevData, { start: lastPrice, end: nextPrice }].slice(
+                -90
+              ); // Keep the last 80 candles (5 minutes)
             });
 
             setCurrentPrice(nextPrice); // Update current price dynamically
@@ -72,7 +76,7 @@ function Market() {
         setIs5sChart(true);
       } else {
         const response = await axios.get(
-          "http://127.0.0.1:5000/api/stock-data",
+          "http://127.0.0.1:8000/api/stock-data",
           { params: { ticker, range: timeRange } }
         );
 
@@ -81,7 +85,7 @@ function Market() {
           data.prices[data.prices.length - 1] > data.prices[0];
 
         const companyResponse = await axios.get(
-          "http://127.0.0.1:5000/api/company-name",
+          "http://127.0.0.1:8000/api/company-name",
           { params: { ticker } }
         );
         setCompanyName(companyResponse.data.companyName);
@@ -146,14 +150,14 @@ function Market() {
   };
 
   const handleTickerChange = async () => {
-    const response = await axios.get('http://127.0.0.1:5000/api/valid-ticker', {
+    const response = await axios.get("http://127.0.0.1:8000/api/valid-ticker", {
       params: { ticker: name.toUpperCase() },
     });
     if (response.data.is_valid) {
       setTicker(name.toUpperCase());
     } else {
       alert("Invalid ticker symbol. Please try again.");
-    };
+    }
   };
 
   // Percent change calculation based on the initial price for the 5s chart
@@ -186,8 +190,9 @@ function Market() {
                 style={{
                   color:
                     currentPrice &&
-                    chartData.datasets[0].data[chartData.datasets[0].data.length - 1] >
-                      chartData.datasets[0].data[0]
+                    chartData.datasets[0].data[
+                      chartData.datasets[0].data.length - 1
+                    ] > chartData.datasets[0].data[0]
                       ? "#10b981"
                       : "#ef4444",
                 }}
@@ -220,14 +225,16 @@ function Market() {
                 {timeRange !== "5s" && (
                   <>
                     {currentPrice &&
-                    chartData.datasets[0].data[chartData.datasets[0].data.length - 1] >
-                      chartData.datasets[0].data[0]
+                    chartData.datasets[0].data[
+                      chartData.datasets[0].data.length - 1
+                    ] > chartData.datasets[0].data[0]
                       ? "+"
                       : ""}
                     {currentPrice &&
                       (
-                        chartData.datasets[0].data[chartData.datasets[0].data.length - 1] -
-                        chartData.datasets[0].data[0]
+                        chartData.datasets[0].data[
+                          chartData.datasets[0].data.length - 1
+                        ] - chartData.datasets[0].data[0]
                       ).toFixed(2)}{" "}
                     USD{" "}
                     <span style={{ color: "white" }}>
@@ -236,7 +243,7 @@ function Market() {
                         (
                           ((currentPrice - chartData.datasets[0].data[0]) /
                             chartData.datasets[0].data[0]) *
-                        100
+                          100
                         ).toFixed(2)}
                       %)
                     </span>
@@ -270,7 +277,11 @@ function Market() {
             </button>
           ))}
         </div>
-        <div className="exposure"><h2>Net Exposure: Display Long and short data here in green and red</h2></div>
+        <div className="exposure">
+          <h2>
+            Net Exposure: Display Long and short data here in green and red
+          </h2>
+        </div>
       </div>
       <div className="order-section">
         <div className="search-bar-box">
@@ -281,7 +292,9 @@ function Market() {
             className="search-bar"
             placeholder="Enter ticker..."
           />
-          <button onClick={handleTickerChange} className="ticker-submit">Search</button>
+          <button onClick={handleTickerChange} className="ticker-submit">
+            Search
+          </button>
         </div>
         <div className="bid-ask-title">Market/Quotes</div>
         <BidAskTable ticker={ticker} price={currentPrice} className="bid-ask" />

@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
-import '../bidask.css'; // Import custom styles
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import "../bidask.css"; // Import custom styles
 
 function BidAskTable({ ticker, price }) {
   const [orders, setOrders] = useState([]); // Store previous orders
   const [orderIds, setOrderIds] = useState(new Set()); // Ensure uniqueness of orders
   const MAX_ORDERS = 10;
-  
+
   // Track the previous ticker to check for changes
   const prevTickerRef = useRef();
 
@@ -18,13 +18,12 @@ function BidAskTable({ ticker, price }) {
       setOrderIds(new Set());
     }
     prevTickerRef.current = ticker; // Update the previous ticker value
-
   }, [ticker]); // This will run when the ticker changes
 
   useEffect(() => {
     const fetchBidAskData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/api/bid-ask', {
+        const response = await axios.get("http://127.0.0.1:8000/api/bid-ask", {
           params: { symbol: ticker, price }, // Pass price to the backend
         });
 
@@ -55,7 +54,7 @@ function BidAskTable({ ticker, price }) {
           });
         }
       } catch (error) {
-        console.error('Error fetching bid/ask data:', error);
+        console.error("Error fetching bid/ask data:", error);
       }
     };
 
@@ -85,10 +84,10 @@ function BidAskTable({ ticker, price }) {
           <tbody>
             {orders.map((order) => (
               <tr key={order.orderId}>
-                <td>{order.bid_size || 'N/A'}</td>
-                <td className="green-text">{order.bid || 'N/A'}</td>
-                <td className="red-text">{order.ask || 'N/A'}</td>
-                <td>{order.ask_size || 'N/A'}</td>
+                <td>{order.bid_size || "N/A"}</td>
+                <td className="green-text">{order.bid || "N/A"}</td>
+                <td className="red-text">{order.ask || "N/A"}</td>
+                <td>{order.ask_size || "N/A"}</td>
               </tr>
             ))}
           </tbody>
