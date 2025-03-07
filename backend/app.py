@@ -63,6 +63,7 @@ def isvalid():
     data = yf.Ticker(ticker).history(period='1d')
     return {"is_valid": not data.empty}
 
+
 @app.route('/api/bid-ask', methods=['GET'])
 def get_bid_ask():
     symbol = request.args.get('symbol', 'AAPL')
