@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import LineChart from "./chart"; // Import the LineChart component
 import Candlestick from "./candlestick"; // Import the custom Candlestick component
 import axios from "axios";
@@ -17,6 +17,7 @@ function Market() {
   const [simulationInterval, setSimulationInterval] = useState(null); // For 5s simulation
   const [is5sChart, setIs5sChart] = useState(false); // Track if it's 5s chart
   const [initialPrice, setInitialPrice] = useState(null); // To store the first price for percent change calculation
+  const prevTicker = useRef('AAPL') // default ticker
 
   const fetchStockData = async () => {
     try {
@@ -126,7 +127,15 @@ function Market() {
     }
   };
 
+
+
   useEffect(() => {
+    if (prevTicker.current != ticker) {
+      setTimeRange('1mo');
+      setActiveButton('1mo');
+      prevTicker.current = ticker;
+    }
+
     fetchStockData();
     if (timeRange !== "5s" && simulationInterval) {
       clearInterval(simulationInterval); // Clear simulation when not in 5s range
@@ -139,6 +148,8 @@ function Market() {
       setInitialPrice(null); // Reset the initial price when not in 5s range
     }
   }, [ticker, timeRange]);
+
+
 
   const handleButtonClick = (range) => {
     setActiveButton(range);

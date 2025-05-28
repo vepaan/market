@@ -1,12 +1,11 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react'
 
-function Dashboard() {
+function App() {
+  const [showCompany, setCompnay] = useState("");
+
   return (
-    <div>
-      <h1>Dashboard Page</h1>
-      <p>Welcome to the companies</p>
-    </div>
-  );
+    <h1>Welcome to companies</h1>
+  )
 }
 
-export default Dashboard;
+export default App;
