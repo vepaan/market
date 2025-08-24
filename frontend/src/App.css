@@ -1,301 +1,156 @@
 .App {
   display: flex;
-  flex-direction: column; /* Stack children vertically */
-  justify-content: flex-start; /* Align children at the top */
-  align-items: center; /* Center the content horizontally */
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   width: 100vw;
   height: 100vh;
-  padding-top: 15px; /* Optional: add some space between the top and navbar */
-  background-color: green;
-}
-
-.navbar {
-  background-color: gray;
-  height: 90px;
-  width: 90%;
-  display: flex;
-  justify-content: center;
-  border-radius: 20px;
-  margin-bottom: 20px; /* Adds space between the navbar and the content */
-}
-
-.navbar-button {
-  display: flex;
-  width: 100px;
-  background-color: gray;
-  margin-left: 20px;
-  margin-right: 20px;
-  text-decoration: none;
-  color: black;
-  align-items: center;
-  justify-content: center;
-}
-
-.navbar-button:hover {
-  background-color: lightgray;
-}
-
-.content {
-  width: 100%;
+  padding-top: 15px;
   background-color: black;
-  flex-grow: 1; /* Make the content area flexible to fill the remaining space */
-  display: flex;
-  justify-content: center; /* Center the content horizontally */
-  align-items: center; /* Center content vertically */
-  height: 100%; /* Make content area take up the full height available */
+  color: white; /* Set a default text color for the app */
 }
 
-
-.market{
+.dashboard {
   display: flex;
   flex-direction: row;
-  width: 100vw;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
+  width: 95%;
+  height: 95%;
+  gap: 20px;
 }
 
-.chart-section{
-  width: 45%;
-  height: 500px;
-  outline: solid 1px black;
-  position: relative;
-  top: 40px;
-  margin-left: 6vw;
-  background-color: black;
-  padding-left: 0px;
-  padding-right: 20px;
-}
-
-.chart-button-group{
-  width: auto;
-  height: auto;
-  margin-left: 40px;
-  background-color: black;
-}
-
-.buttons {
-  margin-right: 15px;
-  color: white;
-  background-color: black;
-  border: none;
-  position: relative;
-  padding: 10px 15px;
-  cursor: pointer;
-}
-
-.buttons.active {
-  color: #10b981;
-}
-
-.buttons::after {
-  content: '';
-  position: absolute;
-  bottom: -5px; /* Adjust to place the underline below the text */
-  left: 50%;
-  transform: translateX(-50%) scaleX(0); /* Start with no underline */
-  width: 35px;
-  height: 4px; /* Height of the underline */
-  background-color: #10b981;
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(27, 26, 26);
   border-radius: 10px;
-  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out; /* Smooth transition */
+  padding: 20px;
+  overflow-y: auto;
 }
 
-.buttons.active::after {
-  transform: translateX(-50%) scaleX(1); /* Expand underline */
+.sidebar {
+  width: 300px; /* Fixed width for the sidebar */
+  background-color: rgb(27, 26, 26);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+.stock-header {
+  margin-bottom: 20px;
+}
+
+.stock-header h2 {
+  font-size: 2.5rem;
+  margin: 10px 0;
+}
+
+.price-info {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.current-price {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.percent-change {
+  font-size: 1.2rem;
+}
+
+.chart-section {
+  width: 100%;
+  height: 400px;
+  background-color: black;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-placeholder {
+  text-align: center;
+}
+
+.user-position-section {
+  background-color: rgb(14, 13, 19);
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+
+.user-position-section h3 {
+  border-bottom: 1px solid rgb(53, 53, 53);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
 
 .order-section {
-  width: 35%;
-  min-height: 550px; /* Optional: Ensure the section has a minimum height */
-  position: relative;
-  top: 40px;
-  margin-right: 8vw;
-  margin-left: auto;
-  border-radius: 5px;
-  background-color: rgb(27, 26, 26);
-  color: white;
-  display: flex;
-  flex-direction: column; /* Ensures the children are stacked vertically */
-  align-items: center;
-  overflow: hidden; /* Hide any overflowing content */
-  flex-grow: 0; /* It should not grow beyond content height */
-  margin-bottom: 100px;
-}
-
-
-@media (max-width: 768px) {
-  .chart-section {
-    width: 90%;
-    height: 100%;
-    margin: 20px auto;
-  }
-  .market{
-    flex-direction: column;
-    align-items: center;
-  }
-  .order-section{
-    width: 90%;
-    top: 20px;
-    margin: 20px auto;
-    margin-bottom: 80px;
-  }
-  .order-form {
-    background-color: rgb(14, 13, 19);
-    outline: solid 1px rgb(53, 53, 53);
-    width: 90%;
-    margin-bottom: 26px;
-    position: relative;
-    border-radius: 2px;
-    min-height: 225px; /* Ensure a minimum height */
-    height: auto; /* Allow the height to adjust based on content */
-    flex-grow: 1; /* Allow it to grow based on the content */
-  }
-}
-
-.chart-header{
-  color: white;
-  padding-left: 30px;
-}
-
-.chart-header h2,
-.chart-header h3,
-.chart-header p {
-  margin: 0; /* Remove default margins */
-  padding: 0; /* Reset padding, just in case */
-}
-
-.chart-header h2 {
-  margin-bottom: 15px; /* Custom spacing */
-}
-
-.chart-header h3 {
-  margin-bottom: 3px; /* Custom spacing */
-}
-
-.current-price{
-  color: white;
-}
-
-.percent-change{
-  color: white;
-}
-
-.search-bar-box{
-  padding-left: 30px;
   width: 100%;
-  background-color: black;
-  padding-bottom: 35px;
+  margin-top: 20px;
+  background-color: rgb(14, 13, 19);
+  padding: 20px;
+  border-radius: 5px;
 }
 
-.search-bar{
-  border-radius: 3px;
-  background-color: rgb(44, 42, 42);
-  height: 18px;
-  outline: 1px solid rgb(53, 53, 53);
-  color: white;
-}
-
-.ticker-submit{
-  background-color: rgb(44, 42, 42);
-  border-radius: 3px;
-  color: white;
-  padding: 5px;
-  height: 30px;
-  margin-left: 3px;
-}
-
-.bid-ask-title{
-  color: white;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  font-size: x-large;
-  font-weight: bold;
-  align-self: flex-start;
-  margin-left: 6%;
-}
-
-.place-order-title{
-  color: white;
-  margin-top: 25px;
-  margin-bottom: 10px;
-  font-size: x-large;
-  font-weight: bold;
-  align-self: flex-start;
-  margin-left: 6%;
+.order-section h3 {
+  border-bottom: 1px solid rgb(53, 53, 53);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .order-form {
-  background-color: rgb(14, 13, 19);
-  outline: solid 1px rgb(53, 53, 53);
-  width: 90%;
-  margin-bottom: 26px;
-  position: relative;
-  border-radius: 2px;
-  min-height: 225px; /* Ensure a minimum height */
-  height: auto; /* Allow the height to adjust based on content */
-  flex-grow: 0; /* Prevent it from growing unnecessarily */
-  overflow-y: auto; /* Enable vertical scrolling if content overflows */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-/* Modern scrollbar for order-form */
-.order-form::-webkit-scrollbar {
-  width: 10px;
+.order-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
 }
 
-.order-form::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.order-form::-webkit-scrollbar-thumb {
-  background: rgb(37, 32, 65);
-  border-radius: 5px;
-}
-
-.order-form::-webkit-scrollbar-thumb:hover {
-  background: #0047ab;
-}
-
-.bid-ask {
-  background-color: rgb(14, 13, 19);
-  outline: solid 1px rgb(53, 53, 53);
-  height: 175px; /* Fixed height */
-  width: 90%;
-  position: relative;
-  border-radius: 2px;
-  overflow-y: auto; /* Make the content scrollable */
-  padding: 10px;
-  box-sizing: border-box; /* Ensure padding doesn't affect dimensions */
-}
-
-.bid-ask table {
-  width: 100%;
-  border-collapse: collapse; /* Ensure no extra spacing between table cells */
-}
-
-.bid-ask th, .bid-ask td {
-  text-align: center;
-  padding: 5px;
-  border-bottom: 1px solid rgb(53, 53, 53);
-}
-
-.bid-ask th {
-  position: sticky;
-  top: 0; /* Lock the header row */
-  background-color: rgb(20, 20, 30); /* Slightly different background for the header */
-  z-index: 1; /* Ensure it stays on top */
-}
-
-.bid-ask tr:nth-child(even) {
-  background-color: rgb(30, 30, 40); /* Alternating row colors */
-}
-
-.bid-ask tr:nth-child(odd) {
-  background-color: rgb(14, 13, 19);
-}
-
-.exposure{
+.order-form input, .order-form select {
+  background-color: rgb(44, 42, 42);
   color: white;
-  margin-top: 10px;
+  border: none;
+  border-radius: 3px;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.order-form button {
+  background-color: #10b981;
+  color: black;
+  border: none;
+  padding: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.search-bar {
+  border-radius: 3px;
+  background-color: rgb(44, 42, 42);
+  height: 30px;
+  outline: 1px solid rgb(53, 53, 53);
+  color: white;
+  padding-left: 10px;
+  margin-right: 5px;
+  width: 200px;
+}
+
+.ticker-submit {
+  background-color: #10b981;
+  border: none;
+  color: black;
+  padding: 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
 }
