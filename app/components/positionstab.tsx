@@ -1,11 +1,22 @@
+// app/components/positionstab.tsx
 "use client"
 
 import React from 'react';
+import LineChart from './chart';
 
 interface Position {
     ticker: string;
     shares: number;
-    chartData: number[];
+    chartData: {
+      labels: string[];
+      datasets: {
+        label: string;
+        data: number[];
+        borderColor: string;
+        backgroundColor: string;
+        fill: boolean;
+      }[];
+    };
 }
 
 interface PositionsTabProps {
@@ -14,9 +25,9 @@ interface PositionsTabProps {
 
 export default function PositionsTab({ onTickerClick }: PositionsTabProps) {
     const positions: Position[] = [
-        { ticker: 'AAPL', shares: 10, chartData: [160, 165, 162, 170, 175] },
-        { ticker: 'MSFT', shares: 5, chartData: [280, 285, 283, 290, 295] },
-        { ticker: 'GOOG', shares: 8, chartData: [2500, 2550, 2520, 2600, 2650] },
+        { ticker: 'AAPL', shares: 10, chartData: { labels: ['1', '2', '3', '4', '5'], datasets: [{ label: 'AAPL', data: [160, 165, 162, 170, 175], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.5)', fill: true }] } },
+        { ticker: 'MSFT', shares: 5, chartData: { labels: ['1', '2', '3', '4', '5'], datasets: [{ label: 'MSFT', data: [280, 285, 283, 290, 295], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.5)', fill: true }] } },
+        { ticker: 'GOOG', shares: 8, chartData: { labels: ['1', '2', '3', '4', '5'], datasets: [{ label: 'GOOG', data: [2500, 2550, 2520, 2600, 2650], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.5)', fill: true }] } },
     ];
 
     return (
@@ -31,9 +42,8 @@ export default function PositionsTab({ onTickerClick }: PositionsTabProps) {
                         <h4 className="text-white font-bold">{pos.ticker}</h4>
                         <p className="text-sm text-gray-400">{pos.shares} Shares</p>
                     </div>
-                    {/* Placeholder for small chart thumbnail */}
-                    <div className="w-20 h-10 bg-zinc-800 rounded-md">
-                        {/* A real chart component would go here */}
+                    <div className="w-20 h-10">
+                        <LineChart chartData={pos.chartData} />
                     </div>
                 </div>
             ))}
