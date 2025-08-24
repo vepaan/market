@@ -121,6 +121,27 @@ def get_bid_ask():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/company-details', methods=['GET'])
+def get_company_details():
+    try:
+        ticker = request.args.get('ticker', default='AAPL', type=str)
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        relevant_info = {
+            'longName': info.get('longName', 'N/A'),
+            'sector': info.get('sector', 'N/A'),
+            'industry': info.get('industry', 'N/A'),
+            'longBusinessSummary': info.get('longBusinessSummary', 'N/A'),
+            'country': info.get('country', 'N/A'),
+            'website': info.get('website', 'N/A'),
+            'marketCap': info.get('marketCap', 'N/A'),
+            'dividendYield': info.get('dividendYield', 'N/A'),
+            'trailingPE': info.get('trailingPE', 'N/A'),
+        }
+        return jsonify(relevant_info)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 def calculate_historical_volatility(prices):
     log_returns = np.log(prices / prices.shift(1)).dropna()
     daily_volatility = np.std(log_returns)
