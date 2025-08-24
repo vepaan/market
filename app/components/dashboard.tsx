@@ -9,6 +9,7 @@ import PortfolioChart from './portfoliochart';
 import PositionsTab from './positionstab';
 import PortfolioMetrics from './portfoliometrics';
 import PortfolioDiversity from './portfoliodiversity';
+import CompanyDetails from './companydetails';
 
 interface ChartData {
   labels: string[];
@@ -162,31 +163,36 @@ export default function Dashboard() {
               </div>
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
-              <div className='bg-zinc-800 rounded-lg p-5'>
-                <h3 className='text-xl font-bold mb-3 text-white'>Your Position</h3>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <p className="text-gray-400 text-sm">Shares</p>
-                    <p className="text-white text-lg font-bold">10</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">Average Cost</p>
-                    <p className="text-white text-lg font-bold">${(160.00).toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">Total Value</p>
-                    <p className="text-white text-lg font-bold">${(10 * (currentPrice || 0)).toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">Today's Return</p>
-                    <p className={`text-lg font-bold ${((currentPrice || 0) - 160.00) >= 0 ? 'text-green-500' : 'text-red-500'}`}>${(((currentPrice || 0) - 160.00) * 10).toFixed(2)}</p>
-                  </div>
+                <div className='bg-zinc-800 rounded-lg p-5 flex flex-col' style={{ minHeight: '400px' }}>
+                    <h3 className='text-xl font-bold mb-3 text-white'>Your Position</h3>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <p className="text-gray-400 text-sm">Shares</p>
+                            <p className="text-white text-lg font-bold">10</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-400 text-sm">Average Cost</p>
+                            <p className="text-white text-lg font-bold">${(160.00).toFixed(2)}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-400 text-sm">Total Value</p>
+                            <p className="text-white text-lg font-bold">${(10 * (currentPrice || 0)).toFixed(2)}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-400 text-sm">Today's Return</p>
+                            <p className={`text-lg font-bold ${((currentPrice || 0) - 160.00) >= 0 ? 'text-green-500' : 'text-red-500'}`}>${(((currentPrice || 0) - 160.00) * 10).toFixed(2)}</p>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div className='bg-zinc-800 rounded-lg p-5'>
-                <h3 className='text-xl font-bold mb-3'>Market/Quotes</h3>
-                <BidAskTable ticker={ticker} price={currentPrice} />
-              </div>
+                <div className='bg-zinc-800 rounded-lg p-5 flex flex-col' style={{ minHeight: '400px' }}>
+                    <h3 className='text-xl font-bold mb-3'>Market/Quotes</h3>
+                    <div className="flex-grow">
+                        <BidAskTable ticker={ticker} price={currentPrice} />
+                    </div>
+                </div>
+            </div>
+            <div className="mt-5 bg-zinc-800 rounded-lg p-5">
+              <CompanyDetails ticker={ticker} />
             </div>
           </>
         ) : (
