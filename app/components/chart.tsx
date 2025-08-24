@@ -1,3 +1,5 @@
+"use clinet"
+
 import React from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -42,7 +44,7 @@ interface LineChartProps {
 }
 
 export default function LineChart({ chartData, is5sChart }: LineChartProps) {
-  const options = {
+    const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -106,9 +108,31 @@ export default function LineChart({ chartData, is5sChart }: LineChartProps) {
     tension: 0.4,
   };
 
-  if (!chartData) {
+  const dataWithGradient = chartData ? {
+    ...chartData,
+    datasets: chartData.datasets.map(dataset => ({
+        ...dataset,
+        backgroundColor: (context: ScriptableContext<"line">) => {
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) {
+                return;
+            }
+            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            const isIncreasing = dataset.data[dataset.data.length - 1] > dataset.data[0];
+            const color = isIncreasing ? '#10b981' : '#ef4444';
+            const transparentColor = 'rgba(0, 0, 0, 0)';
+
+            gradient.addColorStop(0, transparentColor);
+            gradient.addColorStop(1, color);
+            return gradient;
+        }
+    }))
+  } : null;
+
+  if (!dataWithGradient) {
     return <p className="text-gray-400">Loading chart...</p>;
   }
 
-  return <Line data={chartData} options={options} />;
+  return <Line data={dataWithGradient} options={options} />;
 }

@@ -143,14 +143,28 @@ export default function Dashboard() {
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
               <div className='bg-zinc-800 rounded-lg p-5'>
-                <h3 className='text-xl font-bold mb-3'>Your Position</h3>
-                <p>Shares: 10</p>
-                <p>Average Cost: $160.00</p>
-                <p>Total Value: ${(10 * (currentPrice || 0)).toFixed(2)}</p>
-                <p>Today's Return: ${(((currentPrice || 0) - 160.00) * 10).toFixed(2)}</p>
+                <h3 className='text-xl font-bold mb-3 text-white'>Your Position</h3>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Shares</p>
+                    <p className="text-white text-lg font-bold">10</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Average Cost</p>
+                    <p className="text-white text-lg font-bold">${(160.00).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Value</p>
+                    <p className="text-white text-lg font-bold">${(10 * (currentPrice || 0)).toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Today's Return</p>
+                    <p className={`text-lg font-bold ${((currentPrice || 0) - 160.00) >= 0 ? 'text-green-500' : 'text-red-500'}`}>${(((currentPrice || 0) - 160.00) * 10).toFixed(2)}</p>
+                  </div>
+                </div>
               </div>
               <div className='bg-zinc-800 rounded-lg p-5'>
-                <h3 className='text-xl font-bold mb-3'>Place Order</h3>
+                <h3 className='text-xl font-bold mb-3 text-white'>Place an Order</h3>
                 <PlaceOrder />
               </div>
             </div>

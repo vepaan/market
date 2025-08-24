@@ -19,23 +19,35 @@ export default function BidAskTable({ ticker, price }: BidAskTableProps) {
   const [bidAskData, setBidAskData] = useState<BidAskData[]>([]);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  const fetchBidAskData = async () => {
+  const fetchBidAskData = async (initialLoad: boolean = false) => {
     try {
       if (!ticker || price === null) {
         setBidAskData([]);
         return;
       }
-      const response = await axios.get(
+
+      const count = initialLoad ? 10 : 1;
+      const response = await axios.get<BidAskData[] | BidAskData>(
         `/api/bid-ask`,
         {
-          params: { symbol: ticker, price: price },
+          params: { symbol: ticker, price: price, count: count },
         }
       );
-      // The Flask API returns a single object, so we wrap it in an array
-      setBidAskData([response.data]);
+      
+      const newBidAskData = Array.isArray(response.data) ? response.data : [response.data];
+
+      setBidAskData(prevData => {
+        if (initialLoad) {
+          return newBidAskData;
+        } else {
+          return [...prevData.slice(1), ...newBidAskData];
+        }
+      });
     } catch (error) {
       console.error("Error fetching bid-ask data:", error);
-      setBidAskData([]); // Reset data on error to prevent issues
+      if (initialLoad) {
+        setBidAskData([]);
+      }
     }
   };
 
@@ -46,8 +58,8 @@ export default function BidAskTable({ ticker, price }: BidAskTableProps) {
     }
 
     if (ticker && price !== null) {
-      fetchBidAskData(); // Fetch immediately
-      const newIntervalId = setInterval(fetchBidAskData, 5000); // Fetch every 5 seconds
+      fetchBidAskData(true); // Fetch 10 data points immediately for initial load
+      const newIntervalId = setInterval(() => fetchBidAskData(false), 5000); // Fetch a new one every 5 seconds
       setIntervalId(newIntervalId);
     } else {
       setBidAskData([]);

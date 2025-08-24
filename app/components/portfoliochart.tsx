@@ -12,7 +12,8 @@ import {
     Tooltip,
     Legend,
     Filler,
-    TooltipItem
+    TooltipItem,
+    ScriptableContext
 } from 'chart.js';
 
 ChartJS.register(
@@ -41,6 +42,27 @@ export default function PortfolioChart() {
                 pointRadius: 0,
             },
         ],
+    };
+
+    const dataWithGradient = {
+        ...data,
+        datasets: data.datasets.map(dataset => ({
+            ...dataset,
+            backgroundColor: (context: ScriptableContext<"line">) => {
+                const chart = context.chart;
+                const { ctx, chartArea } = chart;
+                if (!chartArea) {
+                    return;
+                }
+                const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                const color = '#10b981';
+                const transparentColor = 'rgba(0, 0, 0, 0)';
+
+                gradient.addColorStop(0, transparentColor);
+                gradient.addColorStop(1, color);
+                return gradient;
+            }
+        }))
     };
 
     const options = {
@@ -90,5 +112,5 @@ export default function PortfolioChart() {
         },
     };
 
-    return <Line data={data} options={options} />;
+    return <Line data={dataWithGradient} options={options} />;
 }

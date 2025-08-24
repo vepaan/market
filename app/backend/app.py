@@ -68,52 +68,55 @@ def isvalid():
 def get_bid_ask():
     symbol = request.args.get('symbol', 'AAPL')
     price = request.args.get('price', type=float)  # Accept `price` as a query parameter
+    count = request.args.get('count', type=int) # New parameter for fetching multiple data points
 
     try:
         if price is None:
             raise ValueError("Price parameter is required.")
 
-        current_price = price
+        bid_ask_data = []
 
-        # Generate volume (you can replace this with your actual logic)
-        volume = random.randint(1_000_000, 10_000_000)
+        # Function to generate a single bid-ask entry
+        def generate_bid_ask_entry(current_price):
+            volume = random.randint(1_000_000, 10_000_000)
 
-        base_spread_min = 0.001  # 0.1% of price for stable markets
-        base_spread_max = 0.02   # 2% of price for highly unstable markets
-        volume_normalizer = 1e6
+            base_spread_min = 0.001  # 0.1% of price for stable markets
+            base_spread_max = 0.02   # 2% of price for highly unstable markets
+            volume_normalizer = 1e6
 
-        normalized_volume = volume / volume_normalizer
-        spread_factor = exp(-normalized_volume)  # Exponential decay for spread
-        spread_width = base_spread_min + (base_spread_max - base_spread_min) * spread_factor
+            normalized_volume = volume / volume_normalizer
+            spread_factor = exp(-normalized_volume)
+            spread_width = base_spread_min + (base_spread_max - base_spread_min) * spread_factor
 
-        # Generate bid and ask prices
-        half_spread = spread_width * current_price / 2
-        bid_price = current_price - half_spread
-        ask_price = current_price + half_spread
+            half_spread = spread_width * current_price / 2
+            bid_price = current_price - half_spread
+            ask_price = current_price + half_spread
 
-        # Add randomness to simulate real market behavior
-        bid_price += random.uniform(-1.365, 0.01)
-        ask_price += random.uniform(-0.01, 1.365)
+            bid_price += random.uniform(-1.365, 0.01)
+            ask_price += random.uniform(-0.01, 1.365)
 
-        def generate_volume():
-            if random.random() <= 0.85:  # 85% chance for smaller volumes
-                return random.randint(10, 300)
-            else:  # 15% chance for larger volumes
-                return random.randint(300, 5000)
+            def generate_volume():
+                if random.random() <= 0.85:
+                    return random.randint(10, 300)
+                else:
+                    return random.randint(300, 5000)
 
-        bid_size = generate_volume()
-        ask_size = generate_volume()
+            return {
+                'orderId': str(int(time.time() * 1000)),
+                'symbol': symbol,
+                'bid': round(bid_price, 2),
+                'bid_size': generate_volume(),
+                'ask': round(ask_price, 2),
+                'ask_size': generate_volume()
+            }
 
-        order_id = str(int(time.time() * 1000))
+        if count and count > 0:
+            for _ in range(count):
+                bid_ask_data.append(generate_bid_ask_entry(price))
+        else:
+            bid_ask_data.append(generate_bid_ask_entry(price))
 
-        return jsonify({
-            'orderId': order_id,
-            'symbol': symbol,
-            'bid': round(bid_price, 2),
-            'bid_size': bid_size,
-            'ask': round(ask_price, 2),
-            'ask_size': ask_size
-        })
+        return jsonify(bid_ask_data)
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
