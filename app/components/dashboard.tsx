@@ -8,27 +8,38 @@ import PlaceOrder from './placeorder';
 import PortfolioChart from './portfoliochart';
 import PositionsTab from './positionstab';
 
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    backgroundColor: string;
+    fill: boolean;
+  }[];
+}
+
 export default function Dashboard() {
-  const [ticker, setTicker] = useState(null); // Null for portfolio view, string for stock view
+  const [ticker, setTicker] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [chartData, setChartData] = useState(null);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [companyName, setCompanyName] = useState("");
   const [timeRange, setTimeRange] = useState("1mo");
   const [activeButton, setActiveButton] = useState("1mo");
-  const [currentPrice, setCurrentPrice] = useState(null);
-  const prevTicker = useRef(null);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const prevTicker = useRef<string | null>(null);
 
-  const fetchStockData = async (stock) => {
+  const fetchStockData = async (stock: string) => {
     try {
       const response = await axios.get(
-        "http://127.0.0.1:5000/api/stock-data",
+        "/api/stock-data",
         { params: { ticker: stock, range: timeRange } }
       );
-      const data = response.data;
+      const data: { prices: number[], labels: string[] } = response.data;
       const isIncreasing = data.prices[data.prices.length - 1] > data.prices[0];
 
-      const companyResponse = await axios.get(
-        "http://127.0.0.1:5000/api/company-name",
+      const companyResponse = await axios.get<{ companyName: string }>(
+        "/api/company-name",
         { params: { ticker: stock } }
       );
       setCompanyName(companyResponse.data.companyName);
@@ -64,7 +75,7 @@ export default function Dashboard() {
     }
   }, [ticker, timeRange]);
 
-  const handleButtonClick = (range) => {
+  const handleButtonClick = (range: string) => {
     setActiveButton(range);
     setTimeRange(range);
   };
@@ -72,7 +83,7 @@ export default function Dashboard() {
   const handleTickerChange = async () => {
     const newTicker = name.toUpperCase();
     try {
-      const response = await axios.get('http://127.0.0.1:5000/api/valid-ticker', {
+      const response = await axios.get<{ is_valid: boolean }>('/api/valid-ticker', {
         params: { ticker: newTicker },
       });
       if (response.data.is_valid) {
@@ -109,7 +120,7 @@ export default function Dashboard() {
               <h2 className='text-4xl font-bold'>{companyName ? `${companyName} (${ticker})` : `Loading...`}</h2>
               <div className='flex items-baseline gap-2 mt-2'>
                 <span className='text-3xl font-bold text-white'>${currentPrice ? currentPrice.toFixed(2) : "Loading..."}</span>
-                {chartData && (
+                {chartData && currentPrice !== null && (
                   <span className={`text-lg ${chartData.datasets[0].data[chartData.datasets[0].data.length - 1] > chartData.datasets[0].data[0] ? 'text-green-500' : 'text-red-500'}`}>
                     ({(((currentPrice - chartData.datasets[0].data[0]) / chartData.datasets[0].data[0]) * 100).toFixed(2)}%)
                   </span>

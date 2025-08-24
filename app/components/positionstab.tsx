@@ -2,8 +2,18 @@
 
 import React from 'react';
 
-export default function PositionsTab({ onTickerClick }) {
-    const positions = [
+interface Position {
+    ticker: string;
+    shares: number;
+    chartData: number[];
+}
+
+interface PositionsTabProps {
+    onTickerClick: (ticker: string) => void;
+}
+
+export default function PositionsTab({ onTickerClick }: PositionsTabProps) {
+    const positions: Position[] = [
         { ticker: 'AAPL', shares: 10, chartData: [160, 165, 162, 170, 175] },
         { ticker: 'MSFT', shares: 5, chartData: [280, 285, 283, 290, 295] },
         { ticker: 'GOOG', shares: 8, chartData: [2500, 2550, 2520, 2600, 2650] },

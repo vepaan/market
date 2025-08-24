@@ -3,25 +3,39 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function BidAskTable({ ticker, price }) {
-  const [bidAskData, setBidAskData] = useState([]);
-  const [intervalId, setIntervalId] = useState(null);
+interface BidAskData {
+  bid_size: number;
+  bid: number;
+  ask: number;
+  ask_size: number;
+}
+
+interface BidAskTableProps {
+  ticker: string | null;
+  price: number | null;
+}
+
+export default function BidAskTable({ ticker, price }: BidAskTableProps) {
+  const [bidAskData, setBidAskData] = useState<BidAskData[]>([]);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
 
   const fetchBidAskData = async () => {
     try {
-      if (!ticker) {
+      if (!ticker || price === null) {
         setBidAskData([]);
         return;
       }
       const response = await axios.get(
-        `http://127.0.0.1:5000/api/bid-ask`,
+        `/api/bid-ask`,
         {
-          params: { ticker: ticker, price: price },
+          params: { symbol: ticker, price: price },
         }
       );
-      setBidAskData(response.data.bid_ask_data);
+      // The Flask API returns a single object, so we wrap it in an array
+      setBidAskData([response.data]);
     } catch (error) {
       console.error("Error fetching bid-ask data:", error);
+      setBidAskData([]); // Reset data on error to prevent issues
     }
   };
 
@@ -31,10 +45,12 @@ export default function BidAskTable({ ticker, price }) {
       clearInterval(intervalId);
     }
 
-    if (ticker && price) {
+    if (ticker && price !== null) {
       fetchBidAskData(); // Fetch immediately
       const newIntervalId = setInterval(fetchBidAskData, 5000); // Fetch every 5 seconds
       setIntervalId(newIntervalId);
+    } else {
+      setBidAskData([]);
     }
 
     return () => {
@@ -65,14 +81,14 @@ export default function BidAskTable({ ticker, price }) {
             bidAskData.map((data, index) => (
               <tr key={index} className="hover:bg-zinc-700 transition duration-200">
                 <td className="py-2 px-4 text-gray-400">{data.bid_size}</td>
-                <td className="py-2 px-4 text-green-500 font-bold">${data.bid_price.toFixed(2)}</td>
-                <td className="py-2 px-4 text-red-500 font-bold">${data.ask_price.toFixed(2)}</td>
+                <td className="py-2 px-4 text-green-500 font-bold">${data.bid.toFixed(2)}</td>
+                <td className="py-2 px-4 text-red-500 font-bold">${data.ask.toFixed(2)}</td>
                 <td className="py-2 px-4 text-gray-400">{data.ask_size}</td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="4" className="text-center py-4 text-gray-400">Loading market data...</td>
+              <td colSpan={4} className="text-center py-4 text-gray-400">Loading market data...</td>
             </tr>
           )}
         </tbody>

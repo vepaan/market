@@ -6,7 +6,7 @@ export default function PlaceOrder() {
   const [quantity, setQuantity] = useState(0);
   const [orderType, setOrderType] = useState("market");
 
-  const handleOrder = (type) => {
+  const handleOrder = (type: 'buy' | 'sell') => {
     console.log(`Placing ${type} order for ${quantity} shares at ${orderType} price.`);
   };
 
@@ -17,7 +17,7 @@ export default function PlaceOrder() {
         <input
           type="number"
           value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
+          onChange={(e) => setQuantity(Number(e.target.value))}
           className="px-3 py-2 text-white bg-zinc-900 rounded-md outline-none focus:ring-2 focus:ring-emerald-500"
         />
       </div>

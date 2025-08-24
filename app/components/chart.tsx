@@ -1,5 +1,3 @@
-"use clinet"
-
 import React from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -12,6 +10,8 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ScriptableContext,
+  TooltipItem,
 } from "chart.js";
 
 ChartJS.register(
@@ -25,7 +25,23 @@ ChartJS.register(
   Filler
 );
 
-export default function LineChart({ chartData, is5sChart }) {
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    backgroundColor: string;
+    fill: boolean;
+  }[];
+}
+
+interface LineChartProps {
+  chartData: ChartData | null;
+  is5sChart?: boolean;
+}
+
+export default function LineChart({ chartData, is5sChart }: LineChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -34,7 +50,7 @@ export default function LineChart({ chartData, is5sChart }) {
         display: false,
       },
       tooltip: {
-        mode: 'index',
+        mode: 'index' as const,
         intersect: false,
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
         titleColor: '#000',
@@ -43,8 +59,8 @@ export default function LineChart({ chartData, is5sChart }) {
         borderWidth: 1,
         caretSize: 0,
         callbacks: {
-          label: function (tooltipItem) {
-            return `Price: $${tooltipItem.raw.toFixed(2)}`;
+          label: function (tooltipItem: TooltipItem<"line">) {
+            return `Price: $${(tooltipItem.raw as number).toFixed(2)}`;
           },
         },
       },
@@ -76,11 +92,13 @@ export default function LineChart({ chartData, is5sChart }) {
       point: {
         radius: 0,
         hoverRadius: 5,
-        backgroundColor: (context) => {
+        backgroundColor: (context: ScriptableContext<"line">) => {
           const chart = context.chart;
           const { data } = chart;
-          if (!data || !data.datasets || !data.datasets.length) return;
-          const isIncreasing = data.datasets[0].data[data.datasets[0].data.length - 1] > data.datasets[0].data[0];
+          if (!data || !data.datasets || data.datasets.length === 0 || !data.datasets[0].data || data.datasets[0].data.length === 0) {
+            return;
+          }
+          const isIncreasing = (data.datasets[0].data[data.datasets[0].data.length - 1] as number) > (data.datasets[0].data[0] as number);
           return isIncreasing ? "#10b981" : "#ef4444";
         },
       },

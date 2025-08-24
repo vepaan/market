@@ -12,6 +12,7 @@ import {
     Tooltip,
     Legend,
     Filler,
+    TooltipItem
 } from 'chart.js';
 
 ChartJS.register(
@@ -50,7 +51,7 @@ export default function PortfolioChart() {
                 display: false,
             },
             tooltip: {
-                mode: 'index',
+                mode: 'index' as const,
                 intersect: false,
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
                 titleColor: '#000',
@@ -58,8 +59,8 @@ export default function PortfolioChart() {
                 borderColor: '#000',
                 borderWidth: 1,
                 callbacks: {
-                    label: function (tooltipItem) {
-                        return `Value: $${tooltipItem.raw.toFixed(2)}`;
+                    label: function (tooltipItem: TooltipItem<"line">) {
+                        return `Value: $${(tooltipItem.raw as number).toFixed(2)}`;
                     },
                 },
             },
