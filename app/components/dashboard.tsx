@@ -10,6 +10,7 @@ import PositionsTab from './positionstab';
 import PortfolioMetrics from './portfoliometrics';
 import PortfolioDiversity from './portfoliodiversity';
 import CompanyDetails from './companydetails';
+import TradeHistory from './tradehistory';
 
 interface ChartData {
   labels: string[];
@@ -108,6 +109,18 @@ export default function Dashboard() {
   const totalEquity = positions.reduce((sum, pos) => sum + pos.shares * pos.price, 0);
   const totalPnL = 205.00; // This would be calculated dynamically
   const buyingPower = 500.00; // This would be dynamic
+  const tradeHistory = [
+      { type: 'buy' as const, shares: 5, price: 155.00, date: 'Jul 20, 2023' },
+      { type: 'sell' as const, shares: 2, price: 165.00, date: 'Aug 01, 2023' },
+      { type: 'buy' as const, shares: 7, price: 170.00, date: 'Aug 15, 2023' },
+  ];
+  
+  const currentPositionValue = (currentPrice || 0) * 10;
+  const portfolioDiversity = totalEquity > 0 ? (currentPositionValue / totalEquity) * 100 : 0;
+  
+  // Calculate total return for the selected position (dummy data)
+  const totalReturn = ((currentPrice || 0) - 160.00) * 10;
+  const isPositiveReturn = totalReturn >= 0;
 
   return (
     <div className='flex flex-col md:flex-row w-full h-full p-5 gap-5'>
@@ -163,26 +176,37 @@ export default function Dashboard() {
               </div>
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
-                <div className='bg-zinc-800 rounded-lg p-5 flex flex-col' style={{ minHeight: '400px' }}>
-                    <h3 className='text-xl font-bold mb-3 text-white'>Your Position</h3>
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                        <div>
-                            <p className="text-gray-400 text-sm">Shares</p>
-                            <p className="text-white text-lg font-bold">10</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-sm">Average Cost</p>
-                            <p className="text-white text-lg font-bold">${(160.00).toFixed(2)}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-sm">Total Value</p>
-                            <p className="text-white text-lg font-bold">${(10 * (currentPrice || 0)).toFixed(2)}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-400 text-sm">Today's Return</p>
-                            <p className={`text-lg font-bold ${((currentPrice || 0) - 160.00) >= 0 ? 'text-green-500' : 'text-red-500'}`}>${(((currentPrice || 0) - 160.00) * 10).toFixed(2)}</p>
+                <div className='bg-zinc-800 rounded-lg p-5 flex flex-col justify-between' style={{ minHeight: '400px' }}>
+                    <div>
+                        <h3 className='text-xl font-bold mb-3 text-white'>Your Position</h3>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <p className="text-gray-400 text-sm">Shares</p>
+                                <p className="text-white text-lg font-bold">10</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-400 text-sm">Average Cost</p>
+                                <p className="text-white text-lg font-bold">${(160.00).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-400 text-sm">Total Value</p>
+                                <p className="text-white text-lg font-bold">${(10 * (currentPrice || 0)).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-400 text-sm">Today's Return</p>
+                                <p className={`text-lg font-bold ${((currentPrice || 0) - 160.00) >= 0 ? 'text-green-500' : 'text-red-500'}`}>${(((currentPrice || 0) - 160.00) * 10).toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-400 text-sm">Total Return</p>
+                                <p className={`text-lg font-bold ${isPositiveReturn ? 'text-green-500' : 'text-red-500'}`}>${totalReturn.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-400 text-sm">Portfolio Diversity</p>
+                                <p className="text-white text-lg font-bold">{portfolioDiversity.toFixed(2)}%</p>
+                            </div>
                         </div>
                     </div>
+                    <TradeHistory trades={tradeHistory} />
                 </div>
                 <div className='bg-zinc-800 rounded-lg p-5 flex flex-col' style={{ minHeight: '400px' }}>
                     <h3 className='text-xl font-bold mb-3'>Market/Quotes</h3>

@@ -127,6 +127,10 @@ def get_company_details():
         ticker = request.args.get('ticker', default='AAPL', type=str)
         stock = yf.Ticker(ticker)
         info = stock.info
+
+        if not info or 'longBusinessSummary' not in info:
+            return jsonify({'error': f"Could not fetch details for ticker: {ticker}"}), 404
+
         relevant_info = {
             'longName': info.get('longName', 'N/A'),
             'sector': info.get('sector', 'N/A'),
