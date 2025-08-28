@@ -14,9 +14,9 @@ interface CompanyInfo {
     longBusinessSummary: string;
     country: string;
     website: string;
-    marketCap: number;
-    dividendYield: number;
-    trailingPE: number;
+    marketCap: number | string;
+    dividendYield: number | string;
+    trailingPE: number | string;
 }
 
 export default function CompanyDetails({ ticker }: CompanyDetailsProps) {
@@ -48,19 +48,29 @@ export default function CompanyDetails({ ticker }: CompanyDetailsProps) {
         return <div className="p-5 text-gray-400">Loading company details...</div>;
     }
 
-    if (!details) {
+    if (!details || details.longName === 'N/A') {
         return <div className="p-5 text-gray-400">Company details not available.</div>;
     }
 
-    const formatMarketCap = (cap: number): string => {
-        if (!cap) return 'N/A';
+    const formatMarketCap = (cap: number | string): string => {
+        if (typeof cap !== 'number') return 'N/A';
         if (cap >= 1e12) {
             return (cap / 1e12).toFixed(2) + 'T';
         }
         if (cap >= 1e9) {
             return (cap / 1e9).toFixed(2) + 'B';
         }
-        return cap.toString();
+        return cap.toFixed(2);
+    };
+
+    const formatNumber = (num: number | string): string => {
+        if (typeof num !== 'number') return 'N/A';
+        return num.toFixed(2);
+    };
+
+    const formatPercent = (num: number | string): string => {
+        if (typeof num !== 'number') return 'N/A';
+        return (num * 100).toFixed(2) + '%';
     };
 
     return (
@@ -87,18 +97,14 @@ export default function CompanyDetails({ ticker }: CompanyDetailsProps) {
                         <span className="text-gray-400">Market Cap</span>
                         <span className="text-white font-semibold">{formatMarketCap(details.marketCap)}</span>
                     </div>
-                    {details.trailingPE && (
-                        <div className="flex flex-col">
-                            <span className="text-gray-400">Trailing P/E</span>
-                            <span className="text-white font-semibold">{details.trailingPE.toFixed(2)}</span>
-                        </div>
-                    )}
-                    {details.dividendYield && (
-                        <div className="flex flex-col">
-                            <span className="text-gray-400">Dividend Yield</span>
-                            <span className="text-white font-semibold">{(details.dividendYield * 100).toFixed(2)}%</span>
-                        </div>
-                    )}
+                    <div className="flex flex-col">
+                        <span className="text-gray-400">Trailing P/E</span>
+                        <span className="text-white font-semibold">{formatNumber(details.trailingPE)}</span>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-gray-400">Dividend Yield</span>
+                        <span className="text-white font-semibold">{formatPercent(details.dividendYield)}</span>
+                    </div>
                 </div>
             </div>
             <style jsx>{`
