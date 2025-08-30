@@ -12,11 +12,8 @@ CORS(app)
 @app.route('/api/stock-data', methods=['GET'])
 def get_stock_data():
     try:
-        print("entered try")
         ticker = request.args.get('ticker', default='AAPL', type=str)
-        print("got ticker")
         range_period = request.args.get('range', default='1mo', type=str)
-        print("got range period")
 
         # Determine interval based on range
         interval_map = {
@@ -30,10 +27,10 @@ def get_stock_data():
 
         # Fetch stock data
         stock = yf.Ticker(ticker)
-        print('got stock')
-        print(stock.history())
-        history = stock.history(period=range_period, interval=interval)
-        print("got history")
+        try:
+            history = stock.history(period=range_period, interval=interval)
+        except Exception as e:
+            print(e)
 
         labels = history.index.strftime('%H:%M' if interval in ['1m', '5m'] else '%b %d').tolist()
         if interval == '1d':
