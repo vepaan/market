@@ -43,6 +43,7 @@ next-env.d.ts
 .env
 app/backend/build
 app/backend/custom.sh
+app/backend/uploads
 
 .vscode
 .idea

@@ -11,7 +11,12 @@ set(BOOST_INCLUDEDIR "${BOOST_ROOT}")
 # Find Boost header-only components (Beast, Asio)
 find_package(Boost 1.89.0 REQUIRED)
 
+#Find drogon header
+find_package(Drogon CONFIG REQUIRED)
+
 add_executable(backend_test main.cpp)
 
 # Include Boost headers
 target_include_directories(backend_test PRIVATE ${Boost_INCLUDE_DIRS})
+
+target_link_libraries(backend_test PRIVATE Drogon::Drogon)

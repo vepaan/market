@@ -1,52 +1,47 @@
-#include <boost/asio.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <sstream>
+#include <drogon/drogon.h>
+#include <json/json.h>
 #include <iostream>
 
-using tcp = boost::asio::ip::tcp;
-namespace http = boost::beast::http;
-
 int main() {
-    try {
-        boost::asio::io_context ioc;
-        tcp::acceptor acceptor(ioc, {tcp::v4(), 8080});
-        std::cout << "Server running at http:://127.0.0.1:8080\n";
-
-        for (;;) {
-            tcp::socket socket(ioc);
-            acceptor.accept(socket);
-
-            boost::beast::flat_buffer buffer;
-            http::request<http::string_body> req;
-            http::read(socket, buffer, req);
-
-            http::response<http::string_body> res{http::status::ok, req.version()};
-            res.set(http::field::server, "SimpleBoostServer");
-            res.set(http::field::content_type, "text/plain");
-            res.keep_alive(req.keep_alive());
-
-            if (req.method() == http::verb::post && req.target() == "/add") {
-                std::istringstream iss(req.body());
-                int a, b;
-                if (iss >> a >> b) {
-                    int sum = a + b;
-                    res.body() = std::to_string(sum);
-                } else {
-                    res.body() = "Error: invalid input. Send 'a b' in body.";
-                    res.result(http::status::bad_request);
+    // Register /add endpoint with proper async signature
+    drogon::app().registerHandler(
+        "/add",
+        [](const drogon::HttpRequestPtr &req,
+           std::function<void(const drogon::HttpResponsePtr &)> &&callback) {
+            try {
+                std::string x_str = req->getParameter("x");
+                std::string y_str = req->getParameter("y");
+                
+                if (x_str.empty() || y_str.empty()) {
+                    auto resp = drogon::HttpResponse::newHttpResponse();
+                    resp->setStatusCode(drogon::k400BadRequest);
+                    resp->setBody("Missing parameters x or y");
+                    callback(resp);
+                    return;
                 }
-            } else {
-                res.body() = "Error: invalid endpoint";
-                res.result(http::status::not_found);
+                
+                int x = std::stoi(x_str);
+                int y = std::stoi(y_str);
+                int sum = x + y;
+
+                Json::Value result;
+                result["sum"] = sum;
+
+                auto resp = drogon::HttpResponse::newHttpJsonResponse(result);
+                callback(resp);
+            } catch (const std::exception &e) {
+                auto resp = drogon::HttpResponse::newHttpResponse();
+                resp->setStatusCode(drogon::k400BadRequest);
+                resp->setBody("Invalid parameters: " + std::string(e.what()));
+                callback(resp);
             }
+        },
+        {drogon::Get}
+    );
 
-            res.prepare_payload();
-            http::write(socket, res);
-        }
+    drogon::app().addListener("127.0.0.1", 8080);
+    std::cout << "Drogon Server running at http://127.0.0.1:8080" << std::endl;
 
-    } catch (std::exception const& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-        return 1;
-    }
+    drogon::app().run();
+    return 0;
 }
