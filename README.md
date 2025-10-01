@@ -54,4 +54,6 @@ This project enables users to trade against each other in real time with **sub-5
                      └─────────────────────┘
 
 ```
-#🖼️ Product
+---
+
+**#🖼️ Product**
