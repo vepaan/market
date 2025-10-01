@@ -26,29 +26,29 @@ This project enables users to trade against each other in real time with **sub-5
 
 ```text
                  ┌─────────────────────────────┐
-                 │          Frontend            │
-                 │         (React App)          │
-                 │   WebSocket-based UI/UX      │
+                 │          Frontend           │
+                 │         (React App)         │
+                 │   WebSocket-based UI/UX     │
                  └─────────────┬───────────────┘
                                │
                                ▼
               ┌──────────────────────────────────┐
-              │        Trading Backend            │
-              │        (C++ / Boost.Asio)         │
-              │   - Async Event Loops             │
-              │   - Order Matching Engine          │
-              │   - Sub-50ms Execution             │
-              └──────────────────┬────────────────┘
+              │        Trading Backend           │
+              │        (C++ / Boost.Asio)        │
+              │   - Async Event Loops            │
+              │   - Order Matching Engine        │
+              │   - Sub-50ms Execution           │
+              └──────────────────┬───────────────┘
                                  │
                                  ▼
                    ┌──────────────────────────┐
-                   │   Dockerized Services     │
-                   │   (Microservice Scaling)  │
+                   │   Dockerized Services    │
+                   │   (Microservice Scaling) │
                    └───────────┬──────────────┘
                                │
                                ▼
                      ┌─────────────────────┐
-                     │   AWS Fargate        │
-                     │ + Load Balancer      │
-                     │ - Scalable to 10k+   │
+                     │   AWS Fargate       │
+                     │ + Load Balancer     │
+                     │ - Scalable to 10k+  │
                      └─────────────────────┘
