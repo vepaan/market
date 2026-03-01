@@ -1,0 +1,10 @@
+{
+  "tickers": {
+    "NVDA" : 0,
+    "AAPL" : 1,
+    "GOOGL" : 2,
+    "MSFT" : 3,
+    "AMZN" : 4,
+    "META" : 5
+  }
+}
