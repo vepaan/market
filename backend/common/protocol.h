@@ -2,6 +2,7 @@
 #define EXCHANGE_PROTOCOL_H
 
 #include <cstdint>
+#include <chrono>
 
 namespace Exchange
 {
@@ -54,18 +55,12 @@ namespace Exchange
 
     #pragma pack(pop)
 
-    class Gateway
+    uint64_t getCurrentNanos()
     {
-    public:
-
-        Gateway();
-
-        ~Gateway();
-
-    private:
-        
-
-    };
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::high_resolution_clock::now().time_since_epoch()
+        ).count();
+    }
 }
 
 #endif
