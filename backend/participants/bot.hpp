@@ -16,11 +16,12 @@ namespace Exchange
         void onMarketUpdate(const MarketUpdate& update) override
         {
             double myTheo = getTheo(update.tickerId);
+            double transactionCost = 0.05;
 
             // rudimentary algo now
-            if (update.price < (myTheo - 0.05)) {
+            if (update.price < (myTheo - transactionCost)) {
                 placeOrder(update.tickerId, update.price, 100, 'B');
-            } else if (update.price > (myTheo + 0.05)) {
+            } else if (update.price > (myTheo + transactionCost)) {
                 placeOrder(update.tickerId, update.price, 100, 'A');
             }
         }
