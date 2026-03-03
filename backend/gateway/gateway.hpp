@@ -40,7 +40,7 @@ namespace Exchange
         int client_socket = accept(server_fd, (struct sockaddr*)&client_addr, &addrlen);
 
         if (client_socket >= 0) {
-          client_threads.emplace_back(&handleClient, this, client_socket);
+          client_threads.emplace_back(&Exchange::Gateway::handleClient, this, client_socket);
         }
       }
     }
@@ -109,6 +109,8 @@ namespace Exchange
       if (listen(server_fd, 5) < 0) {
         throw std::runtime_error("Listen failed.");
       }
+
+      std::cout << "Socket setup sucess!\n";
     }
 
     int port;

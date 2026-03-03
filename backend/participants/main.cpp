@@ -1,4 +1,5 @@
 #include "bot.hpp"
+#include "env-config.hpp"
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -6,11 +7,15 @@
 int main()
 {
     try {
+        Exchange::loadDotEnv();
+        const std::string gatewayHost = Exchange::getEnvString("EXCHANGE_GATEWAY_HOST", "127.0.0.1");
+        const int gatewayPort = Exchange::getEnvInt("EXCHANGE_GATEWAY_PORT", 8080);
+
         Exchange::Bot liquidityBot(1, 100000.0);
 
-        std::cout << "[BOT] Connecting to Gateway at 127.0.0.1:8080..." << std::endl;
+        std::cout << "[BOT] Connecting to Gateway at " << gatewayHost << ":" << gatewayPort << "..." << std::endl;
         
-        liquidityBot.connectToGateway("127.0.0.1", 8080);
+        liquidityBot.connectToGateway(gatewayHost, gatewayPort);
         
         std::cout << "[BOT] Connected! Starting trade loop..." << std::endl;
 

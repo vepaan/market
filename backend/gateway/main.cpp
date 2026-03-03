@@ -1,4 +1,5 @@
 #include "gateway.hpp"
+#include "env-config.hpp"
 #include <iostream>
 #include <csignal>
 #include <memory>
@@ -20,7 +21,8 @@ int main()
     signal(SIGINT, signalHandler);
 
     try {
-        const int PORT = 8080;
+        Exchange::loadDotEnv();
+        const int PORT = Exchange::getEnvInt("EXCHANGE_GATEWAY_PORT", 8080);
         
         global_gateway = std::make_unique<Exchange::Gateway>(PORT);
 

@@ -18,7 +18,8 @@ include_directories(
 
 add_executable(exchange_gateway 
     gateway/main.cpp 
-    gateway/Gateway.cpp
+    gateway/gateway.hpp
+    common/env-config.hpp
 )
 
 target_link_libraries(exchange_gateway PRIVATE 
@@ -28,8 +29,9 @@ target_link_libraries(exchange_gateway PRIVATE
 
 add_executable(trading_bot 
     participants/main.cpp 
-    participants/Participant.cpp
-    participants/Bot.cpp
+    participants/participant.hpp
+    participants/bot.hpp
+    common/env-config.hpp
 )
 
 target_link_libraries(trading_bot PRIVATE 
