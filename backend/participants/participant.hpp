@@ -1,7 +1,7 @@
 #ifndef EXCHANGE_PARTICIPANT_HPP
 #define EXCHANGE_PARTICIPANT_HPP
 
-#include "../common/protocol.h"
+#include "protocol.h"
 #include <string>
 #include <map>
 #include <sys/socket.h>
@@ -16,7 +16,7 @@ namespace Exchange
     {
     public:
 
-        Participant(uint32_t id) : clientId(id), tcp_socket(-1) {}
+        Participant(uint32_t id, double balance) : clientId(id), tcp_socket(-1), balance(balance) {}
         virtual ~Participant() = default;
 
         void connectToGateway(const std::string& ip, int port) 

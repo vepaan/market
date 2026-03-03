@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
+#include "protocol.h"
 
 namespace Exchange
 {
@@ -31,15 +33,54 @@ namespace Exchange
       running = true;
 
       while (running) {
-        
+        sockaddr_in client_addr;
+        socklen_t addrlen = sizeof(client_addr);
+
+        // blocks until participant connects
+        int client_socket = accept(server_fd, (struct sockaddr*)&client_addr, &addrlen);
+
+        if (client_socket >= 0) {
+          client_threads.emplace_back(&handleClient, this, client_socket);
+        }
       }
     }
 
-    void stop();
+    void stop()
+    {
+      running = false;
+      close(server_fd);
+
+      for (auto& t: client_threads) {
+        if (t.joinable()) t.join();
+      }
+    }
 
   private:
 
-    void handleClient(int client_socket);
+    void handleClient(int client_socket)
+    {
+      char buffer[sizeof(OrderRequest)];
+
+      while (running) {
+        ssize_t bytes_read = recv(client_socket, buffer, sizeof(OrderRequest), MSG_WAITALL);
+
+        if (bytes_read <= 0) {
+          // close connection on err
+          close(client_socket);
+          break;
+        }
+
+        if (static_cast<size_t>(bytes_read) == sizeof(OrderRequest)) {
+          // cast raw mem back to struct
+          OrderRequest* req = reinterpret_cast<OrderRequest*>(buffer);
+
+          std::cout << "[GATEWAY] Received Order: " << req->side 
+                      << " | Ticker: " << req->tickerId 
+                      << " | Price: " << req->price 
+                      << " | Vol: " << req->volume << std::endl;
+        }
+      }
+    }
 
     void setupSocket()
     {
@@ -52,10 +93,22 @@ namespace Exchange
 
       // if the gateway crashes or restarts, immediately reclaim same port, otherwise OS puts it in TIME_WAIT (60s)
       int opt = 1;
-      setsocketopt(server_fd, SOL_SOCKET, SO_RESUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+      setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
       
       sockaddr_in address;
-      
+      address.sin_family = AF_INET;
+      address.sin_addr.s_addr = INADDR_ANY; // listen to all available interfaces
+      address.sin_port = htons(port);
+
+      // claim port from os
+      if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+        throw std::runtime_error("Bind failed.");
+      }
+
+      // 5 is backlog
+      if (listen(server_fd, 5) < 0) {
+        throw std::runtime_error("Listen failed.");
+      }
     }
 
     int port;

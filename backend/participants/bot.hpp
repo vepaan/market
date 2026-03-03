@@ -1,7 +1,7 @@
 #ifndef EXCHANGE_BOT_HPP
 #define EXCHANGE_BOT_HPP
 
-#include "./participant.hpp"
+#include "participant.hpp"
 #include <iostream>
 #include <atomic>
 
