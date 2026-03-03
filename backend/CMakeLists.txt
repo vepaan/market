@@ -14,11 +14,13 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/common
     ${PROJECT_SOURCE_DIR}/participants
     ${PROJECT_SOURCE_DIR}/gateway
+    ${PROJECT_SOURCE_DIR}/publisher
 )
 
 add_executable(exchange_gateway 
     gateway/main.cpp 
     gateway/gateway.hpp
+    publisher/market-data-publisher.hpp
     common/env-config.hpp
 )
 

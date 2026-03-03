@@ -7,10 +7,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <stdexcept>
 #include <cstring>
 #include <iostream>
 #include "protocol.h"
+#include "market-data-publisher.hpp"
 
 namespace Exchange
 {
@@ -18,8 +18,8 @@ namespace Exchange
   {
   public:
 
-    Gateway(int port) 
-      : port(port), server_fd(-1), running(false)
+    Gateway(int port, const std::string& mcast_ip, int mcast_port) 
+      : port(port), server_fd(-1), running(false), publisher(mcast_ip, mcast_port)
     {
       client_threads.reserve(100);
       std::cout << "Gateway initialized on port " << port << '\n';
@@ -74,7 +74,17 @@ namespace Exchange
           // cast raw mem back to struct
           OrderRequest* req = reinterpret_cast<OrderRequest*>(buffer);
 
-          std::cout << "[GATEWAY] Received Order: " << req->side 
+          // --- MOCK ENGINE LOGIC ---
+          // For now, let's assume every order is instantly matched as a Trade ('T')
+          MarketUpdate update;
+          update.tickerId = req->tickerId;
+          update.price = req->price;
+          update.volume = req->volume;
+          update.side = 'T';
+
+          publisher.publish(update);
+
+          std::cout << "[GATEWAY] Received Order and Market Data published: " << req->side 
                       << " | Ticker: " << req->tickerId 
                       << " | Price: " << req->price 
                       << " | Vol: " << req->volume << std::endl;
@@ -118,6 +128,8 @@ namespace Exchange
     std::atomic<bool> running;
 
     std::vector<std::thread> client_threads;
+
+    MarketDataPublisher publisher;
 
   };
 }

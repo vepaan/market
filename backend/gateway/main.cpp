@@ -22,14 +22,19 @@ int main()
 
     try {
         Exchange::loadDotEnv();
-        const int PORT = Exchange::getEnvInt("EXCHANGE_GATEWAY_PORT", 8080);
+        const int GATEWAY_PORT = Exchange::getEnvInt("EXCHANGE_GATEWAY_PORT", 8080);
+        const std::string UDP_HOST = Exchange::getEnvString("UDP_BROADCAST_HOST", "127.0.0.1");
+        const int UDP_PORT = Exchange::getEnvInt("UDP_BROADCAST_PORT", 9000);
         
-        global_gateway = std::make_unique<Exchange::Gateway>(PORT);
+        global_gateway = std::make_unique<Exchange::Gateway>(GATEWAY_PORT, UDP_HOST, UDP_PORT);
 
-        std::cout << "============================================" << std::endl;
-        std::cout << "      EXCHANGE GATEWAY STARTING...          " << std::endl;
-        std::cout << "      Port: " << PORT << "                          " << std::endl;
-        std::cout << "============================================" << std::endl;
+        std::cout << "\n+--------------------------------------------------+\n";
+        std::cout << "|               EXCHANGE GATEWAY                  |\n";
+        std::cout << "|                  STARTING                       |\n";
+        std::cout << "+--------------------------------------------------+\n";
+        std::cout << "| TCP Listen Port : " << GATEWAY_PORT << "\n";
+        std::cout << "| UDP Publisher   : " << UDP_HOST << ":" << UDP_PORT << "\n";
+        std::cout << "+--------------------------------------------------+\n" << std::endl;
 
         global_gateway->start();
 
