@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
-// Connect to the Bridge
-const socket = io("http://localhost:3001");
+const bridgeSocketUrl = process.env.NEXT_PUBLIC_BRIDGE_URL;
+if (!bridgeSocketUrl) {
+  console.warn("NEXT_PUBLIC_BRIDGE_URL is not set; falling back to current origin.");
+}
+const socket = io(bridgeSocketUrl ?? "");
 
 interface BidAskData {
   bid_size: number;
@@ -23,6 +26,8 @@ export default function BidAskTable({ ticker, price }: BidAskTableProps) {
 
   useEffect(() => {
     if (!ticker) return;
+
+    setBidAskData([]); //reset
 
     // Listen for real-time updates from the C++ Backend
     socket.on("market_update", (data) => {

@@ -1,6 +1,7 @@
 frontend/.env
 frontend/node_modules
 frontend/.next
+frontend/.env.local
 
 backend/build
 backend/uploads
