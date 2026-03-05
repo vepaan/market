@@ -5,6 +5,7 @@ frontend/.next
 backend/build
 backend/uploads
 backend/custom.sh
+backend/bridge/node_modules
 
 .vscode
 .env

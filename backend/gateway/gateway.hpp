@@ -75,12 +75,13 @@ namespace Exchange
           OrderRequest* req = reinterpret_cast<OrderRequest*>(buffer);
 
           // --- MOCK ENGINE LOGIC ---
-          // For now, let's assume every order is instantly matched as a Trade ('T')
+          // For now, each incoming order is immediately reflected as market data
           MarketUpdate update;
           update.tickerId = req->tickerId;
           update.price = req->price;
           update.volume = req->volume;
-          update.side = 'T';
+          update.timestamp = Exchange::getCurrentNanos();
+          update.side = req->side;
 
           publisher.publish(update);
 
