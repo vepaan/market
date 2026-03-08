@@ -18,8 +18,8 @@ namespace Exchange
   {
   public:
 
-    Gateway(int port, const std::string& mcast_ip, int mcast_port) 
-      : port(port), server_fd(-1), running(false), publisher(mcast_ip, mcast_port)
+    Gateway(int port, MarketDataPublisher* publisher) 
+      : port(port), server_fd(-1), running(false), publisher(publisher)
     {
       client_threads.reserve(100);
       std::cout << "Gateway initialized on port " << port << '\n';
@@ -83,7 +83,7 @@ namespace Exchange
           update.timestamp = Exchange::getCurrentNanos();
           update.side = req->side;
 
-          publisher.publish(update);
+          publisher->publish(update);
 
           std::cout << "[GATEWAY] Received Order and Market Data published: " << req->side 
                       << " | Ticker: " << req->tickerId 
@@ -130,7 +130,7 @@ namespace Exchange
 
     std::vector<std::thread> client_threads;
 
-    MarketDataPublisher publisher;
+    MarketDataPublisher* publisher;
 
   };
 }

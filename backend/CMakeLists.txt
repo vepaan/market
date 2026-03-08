@@ -15,12 +15,15 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/participants
     ${PROJECT_SOURCE_DIR}/gateway
     ${PROJECT_SOURCE_DIR}/publisher
+    ${PROJECT_SOURCE_DIR}/matching
 )
 
 add_executable(exchange_gateway 
     gateway/main.cpp 
     gateway/gateway.hpp
     publisher/market-data-publisher.hpp
+    matching/order-book.hpp
+    matching/matching-engine.hpp
     common/env-config.hpp
 )
 
@@ -33,6 +36,8 @@ add_executable(trading_bot
     participants/main.cpp 
     participants/participant.hpp
     participants/bot.hpp
+    matching/order-book.hpp
+    matching/matching-engine.hpp
     common/env-config.hpp
 )
 
