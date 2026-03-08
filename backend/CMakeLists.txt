@@ -25,6 +25,7 @@ add_executable(exchange_gateway
     matching/order-book.hpp
     matching/matching-engine.hpp
     common/env-config.hpp
+    common/lf-queue.hpp
 )
 
 target_link_libraries(exchange_gateway PRIVATE 
@@ -39,6 +40,7 @@ add_executable(trading_bot
     matching/order-book.hpp
     matching/matching-engine.hpp
     common/env-config.hpp
+    common/lf-queue.hpp
 )
 
 target_link_libraries(trading_bot PRIVATE 

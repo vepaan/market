@@ -18,6 +18,7 @@ namespace Exchange
         {
             Exchange::loadDotEnv();
             const int NUM_TICKERS = Exchange::getEnvInt("NUM_TICKERS", 100);
+            
             for (int i=0; i<NUM_TICKERS; ++i) books[i] = OrderBook();
         }
 
