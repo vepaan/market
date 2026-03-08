@@ -11,6 +11,7 @@ find_package(Boost REQUIRED)
 # 3. Shared Include Directories
 # This allows all targets to access protocol.h and base classes
 include_directories(
+    ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/common
     ${PROJECT_SOURCE_DIR}/participants
     ${PROJECT_SOURCE_DIR}/gateway
@@ -18,8 +19,8 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/matching
 )
 
-add_executable(exchange_gateway 
-    gateway/main.cpp 
+add_executable(exchange_server
+    main.cpp 
     gateway/gateway.hpp
     publisher/market-data-publisher.hpp
     matching/order-book.hpp
@@ -28,7 +29,7 @@ add_executable(exchange_gateway
     common/lf-queue.hpp
 )
 
-target_link_libraries(exchange_gateway PRIVATE 
+target_link_libraries(exchange_server PRIVATE 
     Threads::Threads 
     ${Boost_LIBRARIES}
 )

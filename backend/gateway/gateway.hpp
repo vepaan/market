@@ -18,7 +18,7 @@ namespace Exchange
   {
   public:
 
-    Gateway(int port, MarketDataPublisher* publisher) 
+    Gateway(int port, Exchange::MarketDataPublisher* publisher) 
       : port(port), server_fd(-1), running(false), publisher(publisher)
     {
       client_threads.reserve(100);
@@ -130,7 +130,7 @@ namespace Exchange
 
     std::vector<std::thread> client_threads;
 
-    MarketDataPublisher* publisher;
+    Exchange::MarketDataPublisher* publisher;
 
   };
 }

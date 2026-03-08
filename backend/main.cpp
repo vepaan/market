@@ -28,7 +28,7 @@ int main()
         const int UDP_PORT = Exchange::getEnvInt("UDP_BROADCAST_PORT", 9000);
         
         global_publisher = std::make_unique<Exchange::MarketDataPublisher>(UDP_HOST, UDP_PORT);
-        global_gateway = std::make_unique<Exchange::Gateway>(GATEWAY_PORT, global_publisher);
+        global_gateway = std::make_unique<Exchange::Gateway>(GATEWAY_PORT, global_publisher.get());
 
         std::cout << "\n+--------------------------------------------------+\n";
         std::cout << "|               EXCHANGE GATEWAY                  |\n";

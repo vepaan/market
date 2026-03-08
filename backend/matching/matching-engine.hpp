@@ -13,12 +13,12 @@ namespace Exchange
     {
     public:
 
-        MatchingEngine(MarketDataPublisher* publisher)
+        MatchingEngine(Exchange::MarketDataPublisher* publisher)
           :  publisher(publisher)
         {
             Exchange::loadDotEnv();
             const int NUM_TICKERS = Exchange::getEnvInt("NUM_TICKERS", 100);
-            
+
             for (int i=0; i<NUM_TICKERS; ++i) books[i] = OrderBook();
         }
 
@@ -32,7 +32,7 @@ namespace Exchange
     private:
 
         std::unordered_map<uint32_t, OrderBook> books;
-        MarketDataPublisher* publisher;
+        Exchange::MarketDataPublisher* publisher;
 
     };
 }
