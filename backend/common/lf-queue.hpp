@@ -7,12 +7,12 @@
 
 namespace Exchange
 {
-    template<typename T, size_t Size>
+    template<typename T>
     class LFQueue
     {
     public:
 
-        LFQueue() {}
+        explicit LFQueue(size_t size) : queue_(size) {}
 
         LFQueue(const LFQueue&) = delete;
         LFQueue& operator=(const LFQueue&) = delete;
@@ -45,8 +45,7 @@ namespace Exchange
 
         boost::lockfree::queue<
             T, // should be trivially copyable
-            boost::lockfree::fixed_sized<true>, // no heap allocation after construction
-            boost::lockfree::capacity<Size> // compile size time
+            boost::lockfree::fixed_sized<true> // no heap allocation after construction
         > queue_;
 
     };

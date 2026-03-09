@@ -11,6 +11,7 @@
 #include <iostream>
 #include "protocol.h"
 #include "market-data-publisher.hpp"
+#include "lf-queue.hpp"
 
 namespace Exchange
 {
@@ -18,8 +19,8 @@ namespace Exchange
   {
   public:
 
-    Gateway(int port, Exchange::MarketDataPublisher* publisher) 
-      : port(port), server_fd(-1), running(false), publisher(publisher)
+    Gateway(int port, Exchange::LFQueue<Exchange::OrderRequest>* order_queue) 
+      : port(port), server_fd(-1), running(false), order_queue(order_queue)
     {
       client_threads.reserve(100);
       std::cout << "Gateway initialized on port " << port << '\n';
@@ -74,21 +75,13 @@ namespace Exchange
           // cast raw mem back to struct
           OrderRequest* req = reinterpret_cast<OrderRequest*>(buffer);
 
-          // --- MOCK ENGINE LOGIC ---
-          // For now, each incoming order is immediately reflected as market data
-          MarketUpdate update;
-          update.tickerId = req->tickerId;
-          update.price = req->price;
-          update.volume = req->volume;
-          update.timestamp = Exchange::getCurrentNanos();
-          update.side = req->side;
-
-          publisher->publish(update);
-
-          std::cout << "[GATEWAY] Received Order and Market Data published: " << req->side 
-                      << " | Ticker: " << req->tickerId 
-                      << " | Price: " << req->price 
-                      << " | Vol: " << req->volume << std::endl;
+          if (order_queue->push(*req)) {
+            std::cout << "[GATEWAY] Order Received & Queued | Ticker: " << req->tickerId 
+                      << " | Price: " << req->price << '\n';
+          } else {
+            std::cerr << "[GATEWAY ERROR] Order queue full! Dropping order from Client " 
+                          << req->clientId << '\n';
+          }
         }
       }
     }
@@ -130,7 +123,7 @@ namespace Exchange
 
     std::vector<std::thread> client_threads;
 
-    Exchange::MarketDataPublisher* publisher;
+    Exchange::LFQueue<Exchange::OrderRequest>* order_queue;
 
   };
 }
