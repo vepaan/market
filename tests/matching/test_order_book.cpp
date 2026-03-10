@@ -1,12 +1,14 @@
 #include <gtest/gtest.h>
 #include <limits>
 #include "order-book.hpp"
+#include "protocol.h"
 
 using namespace Exchange;
 
 class OrderBookTest : public ::testing::Test
 {
 protected:
+
     OrderBook book;
 
     OrderRequest createReq(uint32_t cId, uint32_t oId, char side, double price, uint32_t vol)

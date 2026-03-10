@@ -55,7 +55,7 @@ namespace Exchange
 
     #pragma pack(pop)
 
-    uint64_t getCurrentNanos()
+    inline uint64_t getCurrentNanos()
     {
         return std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::high_resolution_clock::now().time_since_epoch()
