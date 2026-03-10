@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <iostream>
 #include <cstring>
+#include <unistd.h>
 
 namespace Exchange
 {
@@ -20,7 +21,16 @@ namespace Exchange
             setupUDPSocket();
         }
 
-        ~MarketDataPublisher() = default;
+        MarketDataPublisher(const MarketDataPublisher&) = delete;
+        MarketDataPublisher& operator=(const MarketDataPublisher&) = delete;
+
+        ~MarketDataPublisher() noexcept
+        {
+            if (udp_socket >= 0) {
+                ::close(udp_socket);
+                udp_socket = -1;
+            }
+        }
 
         void publish(const MarketUpdate& update)
         {
