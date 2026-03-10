@@ -48,3 +48,6 @@ target_link_libraries(trading_bot PRIVATE
     Threads::Threads 
     ${Boost_LIBRARIES}
 )
+
+enable_testing()
+add_subdirectory(tests)

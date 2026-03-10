@@ -8,5 +8,7 @@ backend/uploads
 backend/custom.sh
 backend/bridge/node_modules
 
+tests/build
+
 .vscode
 .env
