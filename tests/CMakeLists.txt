@@ -18,7 +18,7 @@ add_executable(run_tests
     common/test_lf_queue.cpp
     matching/test_order_book.cpp
     matching/test_matching_engine.cpp
-    gateway/test_protocol.cpp
+    gateway/test_gateway.cpp
 )
 
 target_link_libraries(run_tests 

@@ -33,6 +33,12 @@ namespace Exchange
       setupSocket();
       running = true;
 
+      //setting timeout for accept so it doesnt block forever
+      struct timeval tv;
+      tv.tv_sec = 0;
+      tv.tv_usec = 100000; // 100ms timeout
+      setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
       while (running) {
         sockaddr_in client_addr;
         socklen_t addrlen = sizeof(client_addr);
@@ -42,6 +48,9 @@ namespace Exchange
 
         if (client_socket >= 0) {
           client_threads.emplace_back(&Exchange::Gateway::handleClient, this, client_socket);
+        } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+          // this means no connection within 100ms timeout
+          continue;
         }
       }
     }
