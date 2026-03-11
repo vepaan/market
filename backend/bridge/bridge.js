@@ -64,8 +64,14 @@ udpSocket.on('message', (msg, rinfo) => {
                 ask: price,
                 ask_size: volume
             });
+        } else if (side === 'T') {
+            io.emit('trade_update', {
+                ticker,
+                price: price,
+                volume: volume,
+                timestamp: timestamp 
+            });
         }
-        // Ignoring 'T' (Trades) for this specific tape as they belong in Trade History
 
     } catch (error) {
         console.error('Decoding error:', error);

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <limits>
 #include <algorithm>
+#include <vector>
 #include "order-book.hpp"
 #include "protocol.h"
 
@@ -26,21 +27,31 @@ protected:
         req.timestamp = getCurrentNanos();
         return req;
     }
+
+    // Helper function to filter out Book Updates and only return Trades
+    std::vector<MarketUpdate> extractTrades(const std::vector<MarketUpdate>& updates)
+    {
+        std::vector<MarketUpdate> trades;
+        for (const auto& u : updates) {
+            if (u.side == 'T') {
+                trades.push_back(u);
+            }
+        }
+        return trades;
+    }
 };
 
 // Match occurs when prices cross
 TEST_F(OrderBookTest, SimpleMatch)
 {
-    // Sitting Ask (Sell 100 @ 150.0)
     OrderRequest sell_req = {1, 101, 0, 'A', OrderType::Limit, TimeInForce::GTC, 0, 150.0, 100, 100, 0};
-    auto trades1 = book.processOrder(sell_req);
-    auto tradeCount1 = std::count_if(trades1.begin(), trades1.end(),
-        [](const MarketUpdate& u){ return u.side == 'T'; });
-    EXPECT_EQ(tradeCount1, 0); // no match, just added to book
+    auto updates1 = book.processOrder(sell_req);
+    auto trades1 = extractTrades(updates1);
+    EXPECT_EQ(trades1.size(), 0); 
 
-    // Crossing Bid (Buy 100 @ 150.0)
     OrderRequest buy_req = {2, 201, 0, 'B', OrderType::Limit, TimeInForce::GTC, 0, 150.0, 100, 100, 0};
-    auto trades2 = book.processOrder(buy_req);
+    auto updates2 = book.processOrder(buy_req);
+    auto trades2 = extractTrades(updates2);
 
     ASSERT_EQ(trades2.size(), 1);
     EXPECT_EQ(trades2[0].price, 150.0);
@@ -50,26 +61,24 @@ TEST_F(OrderBookTest, SimpleMatch)
 
 TEST_F(OrderBookTest, TimePriority)
 {
-    // place two separate sells at same price
     book.processOrder({1, 10, 0, 'A', OrderType::Limit, TimeInForce::GTC, 0, 100.0, 50, 50, 0});
     book.processOrder({2, 11, 0, 'A', OrderType::Limit, TimeInForce::GTC, 0, 100.0, 50, 50, 0});
 
-    // buy 60 shares which should fill first order completely and second partially
     OrderRequest buy = {3, 12, 0, 'B', OrderType::Limit, TimeInForce::GTC, 0, 100.0, 60, 60, 0};
-    auto trades = book.processOrder(buy);
+    auto updates = book.processOrder(buy);
+    auto trades = extractTrades(updates);
 
     ASSERT_EQ(trades.size(), 2);
-    EXPECT_EQ(trades[0].volume, 50); // first filled
-    EXPECT_EQ(trades[1].volume, 10); // second partially filled
+    EXPECT_EQ(trades[0].volume, 50); 
+    EXPECT_EQ(trades[1].volume, 10); 
 }
 
 TEST_F(OrderBookTest, PricePriorityAsks) {
-    // Add two asks at different prices
-    book.processOrder(createReq(1, 10, 'A', 155.0, 100)); // Higher
-    book.processOrder(createReq(2, 11, 'A', 150.0, 100)); // Lower (Better)
+    book.processOrder(createReq(1, 10, 'A', 155.0, 100)); 
+    book.processOrder(createReq(2, 11, 'A', 150.0, 100)); 
 
-    // Buy 50. It must match with the 150.0 order first.
-    auto trades = book.processOrder(createReq(3, 12, 'B', 160.0, 50));
+    auto updates = book.processOrder(createReq(3, 12, 'B', 160.0, 50));
+    auto trades = extractTrades(updates);
     
     ASSERT_EQ(trades.size(), 1);
     EXPECT_DOUBLE_EQ(trades[0].price, 150.0);
@@ -77,55 +86,55 @@ TEST_F(OrderBookTest, PricePriorityAsks) {
 }
 
 TEST_F(OrderBookTest, TimePriorityBids) {
-    // Two bids at the same price. T1 arrives first.
     book.processOrder(createReq(1, 10, 'B', 100.0, 100));
     book.processOrder(createReq(2, 11, 'B', 100.0, 100));
 
-    // Sell 150. Should eat all of T1 and half of T2.
-    auto trades = book.processOrder(createReq(3, 12, 'A', 90.0, 150));
+    auto updates = book.processOrder(createReq(3, 12, 'A', 90.0, 150));
+    auto trades = extractTrades(updates);
     
     ASSERT_EQ(trades.size(), 2);
-    EXPECT_EQ(trades[0].volume, 100); // Filled T1
-    EXPECT_EQ(trades[1].volume, 50);  // Partially filled T2
+    EXPECT_EQ(trades[0].volume, 100); 
+    EXPECT_EQ(trades[1].volume, 50);  
 }
 
 TEST_F(OrderBookTest, LargeVolumeMatching) {
-    // Test with maximum uint32_t volume to check for overflow logic
     uint32_t maxVol = 2000000; 
     book.processOrder(createReq(1, 1, 'B', 10.0, maxVol));
     
-    auto trades = book.processOrder(createReq(2, 2, 'A', 10.0, maxVol));
+    auto updates = book.processOrder(createReq(2, 2, 'A', 10.0, maxVol));
+    auto trades = extractTrades(updates);
+
     ASSERT_EQ(trades.size(), 1);
     EXPECT_EQ(trades[0].volume, maxVol);
 }
 
 TEST_F(OrderBookTest, PrecisionAndFloatingPoint) {
-    // Obscure sub-penny pricing common in some dark pools or crypto
     double tinyPrice = 0.00000001;
     book.processOrder(createReq(1, 1, 'B', tinyPrice, 100));
     
-    auto trades = book.processOrder(createReq(2, 2, 'A', tinyPrice, 50));
+    auto updates = book.processOrder(createReq(2, 2, 'A', tinyPrice, 50));
+    auto trades = extractTrades(updates);
+
     ASSERT_EQ(trades.size(), 1);
     EXPECT_DOUBLE_EQ(trades[0].price, tinyPrice);
 }
 
 TEST_F(OrderBookTest, MinimumExecutablePrice) {
-    // Testing logic with a price of 0.0 (unlikely but possible in errors)
     book.processOrder(createReq(1, 1, 'A', 0.0, 100));
-    auto trades = book.processOrder(createReq(2, 2, 'B', 0.0, 100));
+    auto updates = book.processOrder(createReq(2, 2, 'B', 0.0, 100));
+    auto trades = extractTrades(updates);
     
     ASSERT_EQ(trades.size(), 1);
     EXPECT_DOUBLE_EQ(trades[0].price, 0.0);
 }
 
 TEST_F(OrderBookTest, SweepMultiplePriceLevels) {
-    // Setup Ask side: 10 @ 10, 10 @ 11, 10 @ 12
     book.processOrder(createReq(1, 1, 'A', 10.0, 10));
     book.processOrder(createReq(2, 2, 'A', 11.0, 10));
     book.processOrder(createReq(3, 3, 'A', 12.0, 10));
 
-    // Buy 25 @ 15. Should sweep 10, 11, and 5 units of 12.
-    auto trades = book.processOrder(createReq(4, 4, 'B', 15.0, 25));
+    auto updates = book.processOrder(createReq(4, 4, 'B', 15.0, 25));
+    auto trades = extractTrades(updates);
 
     ASSERT_EQ(trades.size(), 3);
     EXPECT_EQ(trades[0].price, 10.0);
@@ -135,10 +144,9 @@ TEST_F(OrderBookTest, SweepMultiplePriceLevels) {
 }
 
 TEST_F(OrderBookTest, SelfMatchingPrevention) {
-    // Currently, our OrderBook does not prevent self-matching (Wash Trading).
-    // This test documents existing behavior: Client 1 matches with Client 1.
     book.processOrder(createReq(1, 100, 'B', 50.0, 10));
-    auto trades = book.processOrder(createReq(1, 101, 'A', 50.0, 10));
+    auto updates = book.processOrder(createReq(1, 101, 'A', 50.0, 10));
+    auto trades = extractTrades(updates);
     
     EXPECT_EQ(trades.size(), 1);
     EXPECT_EQ(trades[0].volume, 10);
