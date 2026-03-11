@@ -36,9 +36,6 @@ const io = new Server(Number(PORT_WS), {
 
 const udpSocket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
 
-// Per-ticker order book state: best bid and ask
-const bookState = {};
-
 udpSocket.on('message', (msg, rinfo) => {
     try {
         if (msg.length < 25) return;
@@ -47,32 +44,29 @@ udpSocket.on('message', (msg, rinfo) => {
         const price = msg.readDoubleLE(4);
         const volume = msg.readUInt32LE(12);
         const side = msg.toString('utf8', 24, 25);
+        
         const ticker = tickerById[tickerId] || tickerId.toString();
 
-        if (!bookState[ticker]) {
-            bookState[ticker] = { bid: null, bid_size: 0, ask: null, ask_size: 0, last_price: null, last_volume: null };
-        }
-
+        // Translate the C++ "side/price" format into the format the original React frontend expects
         if (side === 'B') {
-            // Update best bid if this is a better (higher) price or first entry
-            if (bookState[ticker].bid === null || price >= bookState[ticker].bid) {
-                bookState[ticker].bid = price;
-                bookState[ticker].bid_size = volume;
-            }
+            io.emit('market_update', {
+                ticker,
+                bid: price,
+                bid_size: volume,
+                ask: null,
+                ask_size: null
+            });
         } else if (side === 'A') {
-            // Update best ask if this is a better (lower) price or first entry
-            if (bookState[ticker].ask === null || price <= bookState[ticker].ask) {
-                bookState[ticker].ask = price;
-                bookState[ticker].ask_size = volume;
-            }
-        } else if (side === 'T') {
-            bookState[ticker].last_price = price;
-            bookState[ticker].last_volume = volume;
-        } else {
-            return; // ignore unknown sides (e.g. old 'S' seed type)
+            io.emit('market_update', {
+                ticker,
+                bid: null,
+                bid_size: null,
+                ask: price,
+                ask_size: volume
+            });
         }
+        // Ignoring 'T' (Trades) for this specific tape as they belong in Trade History
 
-        io.emit('market_update', { ticker, ...bookState[ticker] });
     } catch (error) {
         console.error('Decoding error:', error);
     }
