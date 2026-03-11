@@ -9,6 +9,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../backend
     ${CMAKE_SOURCE_DIR}/../backend/common
     ${CMAKE_SOURCE_DIR}/../backend/matching
+    ${CMAKE_SOURCE_DIR}/../backend/participants
     ${CMAKE_SOURCE_DIR}/../backend/gateway
     ${CMAKE_SOURCE_DIR}/../backend/publisher
 )

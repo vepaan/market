@@ -102,6 +102,7 @@ TEST_F(GatewayTest, MultipleConcurrentClients) {
 
     for (int i = 0; i < num_clients; ++i) {
         clients.emplace_back([this, i]() {
+            // explicit init so every byte of struct is zeroed and no garbage values
             OrderRequest req = {};
             req.clientId = i;
             req.clientOrderId = 100 + i;
@@ -116,7 +117,7 @@ TEST_F(GatewayTest, MultipleConcurrentClients) {
 
     for (auto& t : clients) t.join();
 
-    // so the gateway threads have time to finish pushing to the queue
+    // so the gateway threads have time to finish pushing to the queue (maybe os context switched)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Verify queue count

@@ -24,7 +24,7 @@ namespace Exchange
         MarketDataPublisher(const MarketDataPublisher&) = delete;
         MarketDataPublisher& operator=(const MarketDataPublisher&) = delete;
 
-        ~MarketDataPublisher() noexcept
+        virtual ~MarketDataPublisher() noexcept
         {
             if (udp_socket >= 0) {
                 ::close(udp_socket);
@@ -32,7 +32,7 @@ namespace Exchange
             }
         }
 
-        void publish(const MarketUpdate& update)
+        virtual void publish(const MarketUpdate& update)
         {
             ssize_t sent = sendto(udp_socket,
                                   reinterpret_cast<const char*>(&update),
