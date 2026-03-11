@@ -50,12 +50,18 @@ namespace Exchange
 
         void setupUDPSocket()
         {
-            // SOCK_DRGAM indicates UDP
+            // SOCK_DGRAM indicates UDP
             udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
 
             if (udp_socket < 0) {
                 throw std::runtime_error("Failed to create UDP socket");
             }
+
+            // multicast: TTL=1 (local network only), loop enabled for same-machine receivers
+            int ttl = 1;
+            setsockopt(udp_socket, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl));
+            int loop = 1;
+            setsockopt(udp_socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
 
             std::memset(&dest_addr, 0, sizeof(dest_addr));
             dest_addr.sin_family = AF_INET;

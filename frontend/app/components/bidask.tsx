@@ -66,8 +66,8 @@ export default function BidAskTable({ ticker, price }: BidAskTableProps) {
             bidAskData.map((data, index) => (
               <tr key={index} className="hover:bg-zinc-700 transition duration-200 border-b border-zinc-800">
                 <td className="py-2 px-4 text-gray-400">{data.bid_size}</td>
-                <td className="py-2 px-4 text-green-500 font-bold">${data.bid.toFixed(2)}</td>
-                <td className="py-2 px-4 text-red-500 font-bold">${data.ask.toFixed(2)}</td>
+                <td className="py-2 px-4 text-green-500 font-bold">{data.bid != null ? `$${data.bid.toFixed(2)}` : '—'}</td>
+                <td className="py-2 px-4 text-red-500 font-bold">{data.ask != null ? `$${data.ask.toFixed(2)}` : '—'}</td>
                 <td className="py-2 px-4 text-gray-400">{data.ask_size}</td>
               </tr>
             ))

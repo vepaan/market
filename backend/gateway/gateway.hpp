@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <cstring>
 #include <iostream>
 #include "protocol.h"
@@ -20,7 +21,7 @@ namespace Exchange
   public:
 
     Gateway(int port, Exchange::LFQueue<Exchange::OrderRequest>* order_queue) 
-      : port(port), server_fd(-1), running(false), order_queue(order_queue)
+      : port(port), server_fd(-1), running(false), order_queue(order_queue), active_connections(0)
     {
       client_threads.reserve(100);
       std::cout << "Gateway initialized on port " << port << '\n';
@@ -33,11 +34,11 @@ namespace Exchange
       setupSocket();
       running = true;
 
-      //setting timeout for accept so it doesnt block forever
-      struct timeval tv;
-      tv.tv_sec = 0;
-      tv.tv_usec = 100000; // 100ms timeout
-      setsockopt(server_fd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+      // Make server_fd non-blocking so accept() doesn't block forever.
+      // Using O_NONBLOCK instead of SO_RCVTIMEO because SO_RCVTIMEO is
+      // inherited by accepted client sockets, which would cause recv() to
+      // time out on active connections.
+      fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
       while (running) {
         sockaddr_in client_addr;
@@ -65,18 +66,23 @@ namespace Exchange
       }
     }
 
+    int getActiveConnectionCount()
+    {
+      return active_connections.load();
+    }
+
   private:
 
     void handleClient(int client_socket)
     {
+      active_connections++;
       char buffer[sizeof(OrderRequest)];
 
       while (running) {
         ssize_t bytes_read = recv(client_socket, buffer, sizeof(OrderRequest), MSG_WAITALL);
 
         if (bytes_read <= 0) {
-          // close connection on err
-          close(client_socket);
+          // err
           break;
         }
 
@@ -93,6 +99,9 @@ namespace Exchange
           }
         }
       }
+
+      close(client_socket);
+      active_connections--;
     }
 
     void setupSocket()
@@ -133,6 +142,8 @@ namespace Exchange
     std::vector<std::thread> client_threads;
 
     Exchange::LFQueue<Exchange::OrderRequest>* order_queue;
+
+    std::atomic<int> active_connections;
 
   };
 }

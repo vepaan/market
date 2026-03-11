@@ -53,8 +53,8 @@ namespace Exchange
             const char* buffer = reinterpret_cast<const char*>(&order);
             size_t total_size = sizeof(OrderRequest);
 
-            // 0 represents blocking until sent
-            ssize_t bytes_sent = send(tcp_socket, buffer, total_size, 0);
+            // MSG_NOSIGNAL: prevents SIGPIPE from killing the process on a broken connection
+            ssize_t bytes_sent = send(tcp_socket, buffer, total_size, MSG_NOSIGNAL);
 
             if (bytes_sent < 0) {
                 throw std::runtime_error("Failed to send order through socket");

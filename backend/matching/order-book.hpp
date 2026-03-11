@@ -65,9 +65,17 @@ namespace Exchange
                 if (orderList.empty()) asks.erase(bestAskIt);
             }
 
-            // if more volume left add to bids (limit)
+            // if more volume left add to bids (limit) and emit a book update
             if (remainingVol > 0) {
                 bids[req.price].push_back({req.clientId, req.clientOrderId, req.price, remainingVol});
+
+                MarketUpdate bookUpdate;
+                bookUpdate.tickerId = req.tickerId;
+                bookUpdate.price = req.price;
+                bookUpdate.volume = remainingVol;
+                bookUpdate.side = 'B';
+                bookUpdate.timestamp = getCurrentNanos();
+                trades.push_back(bookUpdate);
             }
 
             return trades;
@@ -108,6 +116,14 @@ namespace Exchange
 
             if (remainingVol > 0) {
                 asks[req.price].push_back({req.clientId, req.clientOrderId, req.price, remainingVol});
+
+                MarketUpdate bookUpdate;
+                bookUpdate.tickerId = req.tickerId;
+                bookUpdate.price = req.price;
+                bookUpdate.volume = remainingVol;
+                bookUpdate.side = 'A';
+                bookUpdate.timestamp = getCurrentNanos();
+                trades.push_back(bookUpdate);
             }
             
             return trades;

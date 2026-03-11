@@ -34,7 +34,10 @@ const io = new Server(Number(PORT_WS), {
     cors: { origin: FRONTEND_URL, methods: ['GET', 'POST'] }
 });
 
-const udpSocket = dgram.createSocket('udp4');
+const udpSocket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
+
+// Per-ticker order book state: best bid and ask
+const bookState = {};
 
 udpSocket.on('message', (msg, rinfo) => {
     try {
@@ -46,15 +49,30 @@ udpSocket.on('message', (msg, rinfo) => {
         const side = msg.toString('utf8', 24, 25);
         const ticker = tickerById[tickerId] || tickerId.toString();
 
-        const update = {
-            bid_size: side === 'B' ? volume : 0,
-            bid: side === 'B' ? price : price - 0.05,
-            ask: side === 'A' ? price : price + 0.05,
-            ask_size: side === 'A' ? volume : 0,
-            ticker
-        };
+        if (!bookState[ticker]) {
+            bookState[ticker] = { bid: null, bid_size: 0, ask: null, ask_size: 0, last_price: null, last_volume: null };
+        }
 
-        io.emit('market_update', update);
+        if (side === 'B') {
+            // Update best bid if this is a better (higher) price or first entry
+            if (bookState[ticker].bid === null || price >= bookState[ticker].bid) {
+                bookState[ticker].bid = price;
+                bookState[ticker].bid_size = volume;
+            }
+        } else if (side === 'A') {
+            // Update best ask if this is a better (lower) price or first entry
+            if (bookState[ticker].ask === null || price <= bookState[ticker].ask) {
+                bookState[ticker].ask = price;
+                bookState[ticker].ask_size = volume;
+            }
+        } else if (side === 'T') {
+            bookState[ticker].last_price = price;
+            bookState[ticker].last_volume = volume;
+        } else {
+            return; // ignore unknown sides (e.g. old 'S' seed type)
+        }
+
+        io.emit('market_update', { ticker, ...bookState[ticker] });
     } catch (error) {
         console.error('Decoding error:', error);
     }
@@ -64,7 +82,10 @@ udpSocket.on('error', (error) => {
     console.error(`UDP Socket Error: ${error.stack}`);
 });
 
-udpSocket.bind(Number(PORT_UDP), '127.0.0.1', () => {
+const MULTICAST_GROUP = '239.0.0.1';
+
+udpSocket.bind(Number(PORT_UDP), '0.0.0.0', () => {
+    udpSocket.addMembership(MULTICAST_GROUP);
     console.log(`Bridge live: UDP ${PORT_UDP} -> Socket.io ${PORT_WS}`);
     console.log(`CORS allowed for: ${FRONTEND_URL}`);
 });

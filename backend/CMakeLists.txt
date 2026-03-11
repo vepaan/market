@@ -50,4 +50,4 @@ target_link_libraries(trading_bot PRIVATE
 )
 
 enable_testing()
-add_subdirectory(tests)
+add_subdirectory(${PROJECT_SOURCE_DIR}/../tests tests)
