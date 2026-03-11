@@ -29,6 +29,17 @@ public:
         return published_updates;
     }
 
+    // Returns only matched trade events (side == 'T'), excluding book-state updates
+    std::vector<MarketUpdate> get_trades()
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        std::vector<MarketUpdate> trades;
+        std::copy_if(published_updates.begin(), published_updates.end(),
+                     std::back_inserter(trades),
+                     [](const MarketUpdate& u){ return u.side == 'T'; });
+        return trades;
+    }
+
     void clear()
     {
         std::lock_guard<std::mutex> lock(mtx);
@@ -90,14 +101,14 @@ TEST_F(MatchingEngineTest, TickerIsolation) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // Even though prices match, they are different tickers. No trade should be published.
-    auto updates = publisher->get_updates();
+    auto updates = publisher->get_trades();
     EXPECT_EQ(updates.size(), 0);
 
     // Now send a matching ask for ticker 0
     queue.push(createOrder(3, 0, 'A', 100.0, 10));
     
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    updates = publisher->get_updates();
+    updates = publisher->get_trades();
     ASSERT_EQ(updates.size(), 1);
     EXPECT_EQ(updates[0].tickerId, 0);
     EXPECT_EQ(updates[0].side, 'T');
@@ -118,7 +129,7 @@ TEST_F(MatchingEngineTest, HighVolumeBurst) {
     // Wait for the single engine thread to drain the queue
     bool drained = false;
     for (int attempt = 0; attempt < 20; ++attempt) {
-        if (publisher->get_updates().size() == (size_t)num_matches) {
+        if (publisher->get_trades().size() == (size_t)num_matches) {
             drained = true;
             break;
         }
@@ -126,7 +137,7 @@ TEST_F(MatchingEngineTest, HighVolumeBurst) {
     }
 
     EXPECT_TRUE(drained);
-    EXPECT_EQ(publisher->get_updates().size(), num_matches);
+    EXPECT_EQ(publisher->get_trades().size(), num_matches);
 }
 
 // --- EDGE CASE TESTS ---
@@ -144,7 +155,7 @@ TEST_F(MatchingEngineTest, PartialFillSequence) {
     queue.push(createOrder(3, 0, 'A', 10.0, 800));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
-    auto updates = publisher->get_updates();
+    auto updates = publisher->get_trades();
 
     ASSERT_EQ(updates.size(), 2);
     EXPECT_EQ(updates[0].volume, 300); // First fill
@@ -173,7 +184,7 @@ TEST_F(MatchingEngineTest, UninitializedTickerSafety) {
     });
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    auto updates = publisher->get_updates();
+    auto updates = publisher->get_trades();
     ASSERT_EQ(updates.size(), 1);
     EXPECT_EQ(updates[0].tickerId, 9999);
 }

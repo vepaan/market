@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <limits>
+#include <algorithm>
 #include "order-book.hpp"
 #include "protocol.h"
 
@@ -33,8 +34,9 @@ TEST_F(OrderBookTest, SimpleMatch)
     // Sitting Ask (Sell 100 @ 150.0)
     OrderRequest sell_req = {1, 101, 0, 'A', OrderType::Limit, TimeInForce::GTC, 0, 150.0, 100, 100, 0};
     auto trades1 = book.processOrder(sell_req);
-
-    EXPECT_EQ(trades1.size(), 0); // no match, just added to book
+    auto tradeCount1 = std::count_if(trades1.begin(), trades1.end(),
+        [](const MarketUpdate& u){ return u.side == 'T'; });
+    EXPECT_EQ(tradeCount1, 0); // no match, just added to book
 
     // Crossing Bid (Buy 100 @ 150.0)
     OrderRequest buy_req = {2, 201, 0, 'B', OrderType::Limit, TimeInForce::GTC, 0, 150.0, 100, 100, 0};
