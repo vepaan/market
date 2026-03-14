@@ -16,7 +16,6 @@ function loadTickerMap() {
     try {
         const file = fs.readFileSync(tickerMapPath, 'utf8');
         const parsed = JSON.parse(file);
-
         const map = {};
         for (const [symbol, id] of Object.entries(parsed.tickers || {})) {
             map[Number(id)] = symbol;
@@ -34,6 +33,24 @@ const io = new Server(Number(PORT_WS), {
     cors: { origin: FRONTEND_URL, methods: ['GET', 'POST'] }
 });
 
+// NEW: In-memory Level 2 Order Book Cache
+// Structure: { "AAPL": { bids: Map(price -> volume), asks: Map(price -> volume) } }
+const orderBooks = {};
+
+// Handle Web Client Connections & Snapshot Requests
+io.on('connection', (socket) => {
+    socket.on('get_snapshot', (ticker) => {
+        if (orderBooks[ticker]) {
+            // Convert Maps to arrays for the frontend
+            const bids = Array.from(orderBooks[ticker].bids.entries()).map(([price, volume]) => ({ price, volume }));
+            const asks = Array.from(orderBooks[ticker].asks.entries()).map(([price, volume]) => ({ price, volume }));
+            socket.emit('snapshot', { ticker, bids, asks });
+        } else {
+            socket.emit('snapshot', { ticker, bids: [], asks: [] });
+        }
+    });
+});
+
 const udpSocket = dgram.createSocket({ type: 'udp4', reuseAddr: true });
 
 udpSocket.on('message', (msg, rinfo) => {
@@ -43,34 +60,35 @@ udpSocket.on('message', (msg, rinfo) => {
         const tickerId = msg.readUInt32LE(0);
         const price = msg.readDoubleLE(4);
         const volume = msg.readUInt32LE(12);
+        const timestamp = msg.readBigUInt64LE(16).toString(); 
         const side = msg.toString('utf8', 24, 25);
         
         const ticker = tickerById[tickerId] || tickerId.toString();
 
-        // Translate the C++ "side/price" format into the format the original React frontend expects
+        // Initialize cache for ticker if it doesn't exist
+        if (!orderBooks[ticker]) {
+            orderBooks[ticker] = { bids: new Map(), asks: new Map() };
+        }
+        const book = orderBooks[ticker];
+
         if (side === 'B') {
-            io.emit('market_update', {
-                ticker,
-                bid: price,
-                bid_size: volume,
-                ask: null,
-                ask_size: null
-            });
+            // Update the Cache
+            if (volume === 0) book.bids.delete(price);
+            else book.bids.set(price, volume);
+            
+            // Broadcast the tape delta to the frontend
+            io.emit('market_update', { ticker, bid: price, bid_size: volume, ask: null, ask_size: null });
+
         } else if (side === 'A') {
-            io.emit('market_update', {
-                ticker,
-                bid: null,
-                bid_size: null,
-                ask: price,
-                ask_size: volume
-            });
+            // Update the Cache
+            if (volume === 0) book.asks.delete(price);
+            else book.asks.set(price, volume);
+            
+            // Broadcast the tape delta to the frontend
+            io.emit('market_update', { ticker, bid: null, bid_size: null, ask: price, ask_size: volume });
+
         } else if (side === 'T') {
-            io.emit('trade_update', {
-                ticker,
-                price: price,
-                volume: volume,
-                timestamp: timestamp 
-            });
+            io.emit('trade_update', { ticker, price, volume, timestamp });
         }
 
     } catch (error) {
@@ -87,5 +105,4 @@ const MULTICAST_GROUP = '239.0.0.1';
 udpSocket.bind(Number(PORT_UDP), '0.0.0.0', () => {
     udpSocket.addMembership(MULTICAST_GROUP);
     console.log(`Bridge live: UDP ${PORT_UDP} -> Socket.io ${PORT_WS}`);
-    console.log(`CORS allowed for: ${FRONTEND_URL}`);
 });
