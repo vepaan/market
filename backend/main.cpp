@@ -8,6 +8,14 @@
 #include <chrono>
 #include <thread>
 
+std::atomic<bool> keep_running{true};
+
+void sigint_handler(int)
+{
+    std::cout << "\n[SYSTEM] Shutdown signal received. Closing exchange...\n";
+    keep_running = false;
+}
+
 class ExchangeOrchestrator
 {
 public:
@@ -38,6 +46,16 @@ public:
 
         gateway->start();
         monitor_thread.join();
+
+        std::cout << "[SYSTEM] Exchange fully operational. Press CTRL+C to stop.\n";
+
+        // Park the main thread here so the program doesn't exit
+        while (keep_running) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+
+        gateway->stop();
+        engine->stop();
     }
 
 private:
@@ -45,9 +63,11 @@ private:
     void monitorAndSeed()
     {
         // busy wait until gateway report atleast one active connection
-        while (gateway->getActiveConnectionCount() == 0) {
+        while (gateway->getActiveConnectionCount() == 0 && keep_running) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+
+        if (!keep_running) return;
 
         std::cout << "[SYSTEM] First bot detected. Seeding initial market prices...\n";
         seedMarket();
@@ -81,7 +101,11 @@ private:
 
 int main()
 {
+    std::signal(SIGINT, sigint_handler);
+
     ExchangeOrchestrator server;
     server.launch();
+
+    std::cout << "[SYSTEM] Exchange stopped cleanly.\n";
     return 0;
 }

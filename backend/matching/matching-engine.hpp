@@ -25,6 +25,11 @@ namespace Exchange
             for (int i=0; i<NUM_TICKERS; ++i) books[i] = OrderBook();
         }
 
+        ~MatchingEngine()
+        {
+            stop();
+        }
+
         void start()
         {
             running = true;
