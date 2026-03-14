@@ -38,6 +38,8 @@ add_executable(trading_bot
     participants/main.cpp 
     participants/participant.hpp
     participants/bot.hpp
+    participants/market-maker.hpp
+    participants/directional-bot.hpp
     matching/order-book.hpp
     matching/matching-engine.hpp
     common/env-config.hpp
