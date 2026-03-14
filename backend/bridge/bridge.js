@@ -21,6 +21,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // Create Time-Series Table
 db.serialize(() => {
+    // remove this line in prod
+    db.run(`DROP TABLE IF EXISTS candles_5s`);
     db.run(`
         CREATE TABLE IF NOT EXISTS candles_5s (
             ticker TEXT,
