@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { io } from "socket.io-client";
-import LineChart from './chart';
+import CandlestickChart, { CandleData } from './chart';
 import BidAskTable from './bidask';
 import PlaceOrder from './placeorder';
 import PortfolioChart from './portfoliochart';
@@ -23,17 +23,6 @@ interface RawCandle {
   low: number;
   close: number;
   volume: number;
-}
-
-interface ChartData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    borderColor: string;
-    backgroundColor: string;
-    fill: boolean;
-  }[];
 }
 
 export default function Dashboard() {
@@ -107,15 +96,14 @@ export default function Dashboard() {
     };
   }, [ticker]);
 
-  // --- DYNAMIC TIME AGGREGATION ---
-  const chartData = useMemo<ChartData | null>(() => {
+  // --- DYNAMIC TIME AGGREGATION FOR TRADINGVIEW ---
+  const chartData = useMemo<CandleData[] | null>(() => {
     if (rawCandles.length === 0) return null;
 
     let bucketSizeMs = 5000; // default 5s
     if (timeRange === "1m") bucketSizeMs = 60000;
     else if (timeRange === "1h") bucketSizeMs = 3600000;
-    else if (timeRange === "1d") bucketSizeMs = 86400000;
-    else if (timeRange === "max") bucketSizeMs = 86400000; // Group by day for max
+    else if (timeRange === "1d" || timeRange === "max") bucketSizeMs = 86400000; 
 
     const aggregated: RawCandle[] = [];
     
@@ -133,25 +121,14 @@ export default function Dashboard() {
       }
     });
 
-    const labels = aggregated.map(c => {
-      const date = new Date(c.timestamp);
-      if (timeRange === "1d" || timeRange === "max") return date.toLocaleDateString();
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: timeRange === "5s" ? '2-digit' : undefined });
-    });
-
-    const prices = aggregated.map(c => c.close);
-    const isIncreasing = prices[prices.length - 1] >= prices[0];
-
-    return {
-      labels,
-      datasets: [{
-        label: `${ticker} Price`,
-        data: prices,
-        borderColor: isIncreasing ? "#10b981" : "#ef4444",
-        backgroundColor: isIncreasing ? "rgba(16, 185, 129, 0.5)" : "rgba(239, 68, 68, 0.5)",
-        fill: true,
-      }],
-    };
+    // Map to the strict format TradingView Lightweight Charts expects
+    return aggregated.map(c => ({
+      time: Math.floor(c.timestamp / 1000) as import('lightweight-charts').Time, // Convert ms to seconds
+      open: c.open,
+      high: c.high,
+      low: c.low,
+      close: c.close,
+    }));
   }, [rawCandles, timeRange, ticker]);
 
   const handleButtonClick = (range: string) => {
@@ -208,9 +185,9 @@ export default function Dashboard() {
               <h2 className='text-4xl font-bold'>{companyName ? `${companyName} (${ticker})` : `${ticker}`}</h2>
               <div className='flex items-baseline gap-2 mt-2'>
                 <span className='text-3xl font-bold text-white'>${currentPrice ? currentPrice.toFixed(2) : "Loading..."}</span>
-                {chartData && currentPrice !== null && chartData.datasets[0].data.length > 0 && (
-                  <span className={`text-lg ${chartData.datasets[0].data[chartData.datasets[0].data.length - 1] >= chartData.datasets[0].data[0] ? 'text-green-500' : 'text-red-500'}`}>
-                    ({(((currentPrice - chartData.datasets[0].data[0]) / chartData.datasets[0].data[0]) * 100).toFixed(2)}%)
+                {chartData && currentPrice !== null && chartData.length > 0 && (
+                  <span className={`text-lg ${currentPrice >= chartData[0].close ? 'text-green-500' : 'text-red-500'}`}>
+                    ({(((currentPrice - chartData[0].close) / chartData[0].close) * 100).toFixed(2)}%)
                   </span>
                 )}
               </div>
@@ -218,7 +195,7 @@ export default function Dashboard() {
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5'>
               <div className='col-span-1'>
                 <div className='w-full h-96 bg-zinc-950 rounded-lg p-5 flex items-center justify-center'>
-                  {chartData ? <LineChart chartData={chartData} /> : <p className='text-gray-400'>Loading chart...</p>}
+                  {chartData ? <CandlestickChart data={chartData} /> : <p className='text-gray-400'>Loading chart...</p>}
                 </div>
                 <div className='flex justify-between w-full mt-5'>
                   {["5s", "1m", "1h", "1d", "max"].map((range) => (

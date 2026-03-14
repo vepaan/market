@@ -1,139 +1,91 @@
-"use clinet"
+"use client"
 
-import React from "react";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ScriptableContext,
-  TooltipItem,
-} from "chart.js";
+import React, { useEffect, useRef } from "react";
+// NEW: Import CandlestickSeries directly from the library
+import { createChart, ColorType, Time, CandlestickSeries } from "lightweight-charts";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
-
-interface ChartData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    borderColor: string;
-    backgroundColor: string;
-    fill: boolean;
-  }[];
+export interface CandleData {
+  time: Time;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
 }
 
-interface LineChartProps {
-  chartData: ChartData | null;
-  is5sChart?: boolean;
+interface CandlestickChartProps {
+  data: CandleData[] | null;
 }
 
-export default function LineChart({ chartData, is5sChart }: LineChartProps) {
-    const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        titleColor: '#000',
-        bodyColor: '#000',
-        borderColor: '#000',
-        borderWidth: 1,
-        caretSize: 0,
-        callbacks: {
-          label: function (tooltipItem: TooltipItem<"line">) {
-            return `Price: $${(tooltipItem.raw as number).toFixed(2)}`;
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        display: true,
-        grid: {
-          display: false,
-          drawBorder: false,
-        },
-        ticks: {
-          color: "#9ca3af",
-          maxTicksLimit: 7
-        },
-      },
-      y: {
-        display: true,
-        grid: {
-          color: "rgba(100, 100, 100, 0.2)",
-          drawBorder: false,
-        },
-        ticks: {
-          color: "#9ca3af",
-        },
-      },
-    },
-    elements: {
-      point: {
-        radius: 0,
-        hitRadius: 10,
-        hoverRadius: 5,
-        backgroundColor: (context: ScriptableContext<"line">) => {
-          const chart = context.chart;
-          const { data } = chart;
-          if (!data || !data.datasets || data.datasets.length === 0 || !data.datasets[0].data || data.datasets[0].data.length === 0) {
-            return;
-          }
-          const isIncreasing = (data.datasets[0].data[data.datasets[0].data.length - 1] as number) > (data.datasets[0].data[0] as number);
-          return isIncreasing ? "#10b981" : "#ef4444";
-        },
-      },
-    },
-    tension: 0.4,
-  };
+export default function CandlestickChart({ data }: CandlestickChartProps) {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<any>(null);
 
-  const dataWithGradient = chartData ? {
-    ...chartData,
-    datasets: chartData.datasets.map(dataset => ({
-        ...dataset,
-        backgroundColor: (context: ScriptableContext<"line">) => {
-            const chart = context.chart;
-            const { ctx, chartArea } = chart;
-            if (!chartArea) {
-                return;
-            }
-            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-            const isIncreasing = dataset.data[dataset.data.length - 1] > dataset.data[0];
-            const color = isIncreasing ? '#10b981' : '#ef4444';
-            const transparentColor = 'rgba(0, 0, 0, 0)';
+  useEffect(() => {
+    if (!chartContainerRef.current) return;
 
-            gradient.addColorStop(0, transparentColor);
-            gradient.addColorStop(1, color);
-            return gradient;
-        }
-    }))
-  } : null;
+    // 1. Initialize the Chart only once
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: "#9ca3af",
+      },
+      grid: {
+        vertLines: { color: "rgba(100, 100, 100, 0.1)" },
+        horzLines: { color: "rgba(100, 100, 100, 0.1)" },
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: chartContainerRef.current.clientHeight,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: true, // Crucial for our 5s chart!
+      },
+      crosshair: {
+        mode: 0, // Normal crosshair mode
+      }
+    });
 
-  if (!dataWithGradient) {
-    return <p className="text-gray-400">Loading chart...</p>;
+    // 2. THE V5 FIX: Use addSeries and pass CandlestickSeries as the first argument
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
+      upColor: "#10b981",
+      downColor: "#ef4444",
+      borderVisible: false,
+      wickUpColor: "#10b981",
+      wickDownColor: "#ef4444",
+    });
+
+    chartRef.current = { chart, series: candlestickSeries };
+
+    // 3. Handle window resizing smoothly
+    const handleResize = () => {
+      if (chartContainerRef.current && chartRef.current) {
+        chartRef.current.chart.applyOptions({
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight,
+        });
+      }
+    };
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (chartRef.current) {
+        chartRef.current.chart.remove();
+        chartRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update data dynamically whenever the data prop changes
+  useEffect(() => {
+    if (chartRef.current && chartRef.current.series && data && data.length > 0) {
+      chartRef.current.series.setData(data);
+    }
+  }, [data]);
+
+  if (!data || data.length === 0) {
+    return <p className="text-gray-400 w-full h-full flex items-center justify-center">Awaiting Market Data...</p>;
   }
 
-  return <Line data={dataWithGradient} options={options} />;
+  return <div ref={chartContainerRef} className="w-full h-full" />;
 }
