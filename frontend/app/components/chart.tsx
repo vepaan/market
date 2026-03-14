@@ -93,6 +93,7 @@ export default function LineChart({ chartData, is5sChart }: LineChartProps) {
     elements: {
       point: {
         radius: 0,
+        hitRadius: 10,
         hoverRadius: 5,
         backgroundColor: (context: ScriptableContext<"line">) => {
           const chart = context.chart;

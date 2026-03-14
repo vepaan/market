@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
+import { io } from "socket.io-client";
 import LineChart from './chart';
 import BidAskTable from './bidask';
 import PlaceOrder from './placeorder';
@@ -11,6 +12,18 @@ import PortfolioMetrics from './portfoliometrics';
 import PortfolioDiversity from './portfoliodiversity';
 import CompanyDetails from './companydetails';
 import TradeHistory from './tradehistory';
+
+const bridgeSocketUrl = process.env.NEXT_PUBLIC_BRIDGE_URL || "http://localhost:3001";
+const socket = io(bridgeSocketUrl);
+
+interface RawCandle {
+  timestamp: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
 
 interface ChartData {
   labels: string[];
@@ -26,89 +39,139 @@ interface ChartData {
 export default function Dashboard() {
   const [ticker, setTicker] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [companyName, setCompanyName] = useState("");
-  const [timeRange, setTimeRange] = useState("1mo");
-  const [activeButton, setActiveButton] = useState("1mo");
+  
+  // LIVE DATA STATES
+  const [rawCandles, setRawCandles] = useState<RawCandle[]>([]);
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  
+  const [timeRange, setTimeRange] = useState("5s");
+  const [activeButton, setActiveButton] = useState("5s");
   const prevTicker = useRef<string | null>(null);
 
-  const fetchStockData = async (stock: string) => {
-    try {
-      const response = await axios.get(
-        "/api/stock-data",
-        { params: { ticker: stock, range: timeRange } }
-      );
-      const data: { prices: number[], labels: string[] } = response.data;
-      const isIncreasing = data.prices[data.prices.length - 1] > data.prices[0];
-
-      const companyResponse = await axios.get<{ companyName: string }>(
-        "/api/company-name",
-        { params: { ticker: stock } }
-      );
-      setCompanyName(companyResponse.data.companyName);
-
-      setChartData({
-        labels: data.labels,
-        datasets: [
-          {
-            label: `${stock} Stock Price (USD)`,
-            data: data.prices,
-            borderColor: isIncreasing ? "#10b981" : "#ef4444",
-            backgroundColor: isIncreasing ? "rgba(16, 185, 129, 0.5)" : "rgba(239, 68, 68, 0.5)",
-            fill: true,
-          },
-        ],
-      });
-      setCurrentPrice(data.prices[data.prices.length - 1]);
-    } catch (error) {
-      console.error("Error fetching stock data:", error);
-      setChartData(null);
-      setCurrentPrice(null);
-    }
-  };
-
   useEffect(() => {
-    if (ticker) {
-      if (prevTicker.current !== ticker) {
-        setTimeRange('1mo');
-        setActiveButton('1mo');
+    if (!ticker) return;
+
+    if (prevTicker.current !== ticker) {
+        setTimeRange('5s');
+        setActiveButton('5s');
         prevTicker.current = ticker;
-      }
-      fetchStockData(ticker);
     }
-  }, [ticker, timeRange]);
+
+    setRawCandles([]); // Clear old data
+
+    // Fetch company name (Optional, keep if you have the API)
+    axios.get<{ companyName: string }>("/api/company-name", { params: { ticker } })
+         .then(res => setCompanyName(res.data.companyName))
+         .catch(() => setCompanyName(""));
+
+    // 1. Request Historical 5s Candles from SQLite
+    socket.emit("get_chart_history", ticker);
+
+    // 2. Listen for the initial history payload
+    const handleHistory = (data: { ticker: string, candles: RawCandle[] }) => {
+      if (data.ticker === ticker) {
+        setRawCandles(data.candles);
+        if (data.candles.length > 0) {
+          setCurrentPrice(data.candles[data.candles.length - 1].close);
+        }
+      }
+    };
+
+    // 3. Listen for live candle updates
+    const handleCandleUpdate = (data: RawCandle & { ticker: string }) => {
+      if (data.ticker !== ticker) return;
+      
+      setCurrentPrice(data.close);
+      
+      setRawCandles(prev => {
+        const copy = [...prev];
+        const lastIndex = copy.length - 1;
+        
+        // If it's the same 5s bucket, update it. Otherwise, push a new candle.
+        if (lastIndex >= 0 && copy[lastIndex].timestamp === data.timestamp) {
+          copy[lastIndex] = data; 
+        } else {
+          copy.push(data);
+        }
+        return copy;
+      });
+    };
+
+    socket.on("chart_history", handleHistory);
+    socket.on("candle_update", handleCandleUpdate);
+
+    return () => {
+      socket.off("chart_history", handleHistory);
+      socket.off("candle_update", handleCandleUpdate);
+    };
+  }, [ticker]);
+
+  // --- DYNAMIC TIME AGGREGATION ---
+  const chartData = useMemo<ChartData | null>(() => {
+    if (rawCandles.length === 0) return null;
+
+    let bucketSizeMs = 5000; // default 5s
+    if (timeRange === "1m") bucketSizeMs = 60000;
+    else if (timeRange === "1h") bucketSizeMs = 3600000;
+    else if (timeRange === "1d") bucketSizeMs = 86400000;
+    else if (timeRange === "max") bucketSizeMs = 86400000; // Group by day for max
+
+    const aggregated: RawCandle[] = [];
+    
+    rawCandles.forEach(candle => {
+      const bucketTime = Math.floor(candle.timestamp / bucketSizeMs) * bucketSizeMs;
+      
+      if (aggregated.length === 0 || aggregated[aggregated.length - 1].timestamp !== bucketTime) {
+        aggregated.push({ ...candle, timestamp: bucketTime });
+      } else {
+        const last = aggregated[aggregated.length - 1];
+        last.high = Math.max(last.high, candle.high);
+        last.low = Math.min(last.low, candle.low);
+        last.close = candle.close; // Latest close wins
+        last.volume += candle.volume;
+      }
+    });
+
+    const labels = aggregated.map(c => {
+      const date = new Date(c.timestamp);
+      if (timeRange === "1d" || timeRange === "max") return date.toLocaleDateString();
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: timeRange === "5s" ? '2-digit' : undefined });
+    });
+
+    const prices = aggregated.map(c => c.close);
+    const isIncreasing = prices[prices.length - 1] >= prices[0];
+
+    return {
+      labels,
+      datasets: [{
+        label: `${ticker} Price`,
+        data: prices,
+        borderColor: isIncreasing ? "#10b981" : "#ef4444",
+        backgroundColor: isIncreasing ? "rgba(16, 185, 129, 0.5)" : "rgba(239, 68, 68, 0.5)",
+        fill: true,
+      }],
+    };
+  }, [rawCandles, timeRange, ticker]);
 
   const handleButtonClick = (range: string) => {
     setActiveButton(range);
     setTimeRange(range);
   };
 
-  const handleTickerChange = async () => {
-    const newTicker = name.toUpperCase();
-    try {
-      const response = await axios.get<{ is_valid: boolean }>('/api/valid-ticker', {
-        params: { ticker: newTicker },
-      });
-      if (response.data.is_valid) {
-        setTicker(newTicker);
-      } else {
-        alert("Invalid ticker symbol. Please try again.");
-      }
-    } catch (error) {
-      alert("Error validating ticker. Please try again.");
-    }
+  const handleTickerChange = () => {
+    if (name.trim()) setTicker(name.toUpperCase());
   };
 
-  // Dummy data for Portfolio Metrics and Diversity
+  // --- DUMMY DATA RESTORED ---
   const positions = [
       { ticker: 'AAPL', shares: 10, price: 175.00 },
       { ticker: 'MSFT', shares: 5, price: 350.00 },
       { ticker: 'GOOG', shares: 8, price: 2600.00 },
   ];
   const totalEquity = positions.reduce((sum, pos) => sum + pos.shares * pos.price, 0);
-  const totalPnL = 205.00; // This would be calculated dynamically
-  const buyingPower = 500.00; // This would be dynamic
+  const totalPnL = 205.00; 
+  const buyingPower = 500.00; 
   const tradeHistory = [
       { type: 'buy' as const, shares: 5, price: 155.00, date: 'Jul 20, 2023' },
       { type: 'sell' as const, shares: 2, price: 165.00, date: 'Aug 01, 2023' },
@@ -117,8 +180,6 @@ export default function Dashboard() {
   
   const currentPositionValue = (currentPrice || 0) * 10;
   const portfolioDiversity = totalEquity > 0 ? (currentPositionValue / totalEquity) * 100 : 0;
-  
-  // Calculate total return for the selected position (dummy data)
   const totalReturn = ((currentPrice || 0) - 160.00) * 10;
   const isPositiveReturn = totalReturn >= 0;
 
@@ -129,6 +190,7 @@ export default function Dashboard() {
           <div className='w-full'>
             <input
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleTickerChange()}
               value={name}
               type="text"
               className="w-full md:w-1/3 px-3 py-2 text-white bg-zinc-800 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500"
@@ -143,11 +205,11 @@ export default function Dashboard() {
         {ticker ? (
           <>
             <div className='flex flex-col mb-5'>
-              <h2 className='text-4xl font-bold'>{companyName ? `${companyName} (${ticker})` : `Loading...`}</h2>
+              <h2 className='text-4xl font-bold'>{companyName ? `${companyName} (${ticker})` : `${ticker}`}</h2>
               <div className='flex items-baseline gap-2 mt-2'>
                 <span className='text-3xl font-bold text-white'>${currentPrice ? currentPrice.toFixed(2) : "Loading..."}</span>
-                {chartData && currentPrice !== null && (
-                  <span className={`text-lg ${chartData.datasets[0].data[chartData.datasets[0].data.length - 1] > chartData.datasets[0].data[0] ? 'text-green-500' : 'text-red-500'}`}>
+                {chartData && currentPrice !== null && chartData.datasets[0].data.length > 0 && (
+                  <span className={`text-lg ${chartData.datasets[0].data[chartData.datasets[0].data.length - 1] >= chartData.datasets[0].data[0] ? 'text-green-500' : 'text-red-500'}`}>
                     ({(((currentPrice - chartData.datasets[0].data[0]) / chartData.datasets[0].data[0]) * 100).toFixed(2)}%)
                   </span>
                 )}
@@ -159,7 +221,7 @@ export default function Dashboard() {
                   {chartData ? <LineChart chartData={chartData} /> : <p className='text-gray-400'>Loading chart...</p>}
                 </div>
                 <div className='flex justify-between w-full mt-5'>
-                  {["1d", "5d", "1mo", "1y", "max"].map((range) => (
+                  {["5s", "1m", "1h", "1d", "max"].map((range) => (
                     <button
                       key={range}
                       onClick={() => handleButtonClick(range)}
