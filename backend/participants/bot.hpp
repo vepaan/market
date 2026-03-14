@@ -7,54 +7,43 @@
 
 namespace Exchange
 {
-    class Bot : public Participant
+    template <typename T>
+    class Bot : public Participant<T>
     {
     public:
 
-        using Participant::Participant;
+        using Participant<T>::clientId;
+        using Participant<T>::balance;
+        using Participant<T>::holdings;
+        using Participant<T>::sendOrder;
+        
+        Bot(uint32_t id, double balance) : Participant<T>(id, balance) {}
 
-        void onMarketUpdate(const MarketUpdate& update) override
-        {
-            double myTheo = getTheo(update.tickerId);
-            double transactionCost = 0.05;
-
-            // rudimentary algo now
-            if (update.price < (myTheo - transactionCost)) {
-                placeOrder(update.tickerId, update.price, 100, 'B');
-            } else if (update.price > (myTheo + transactionCost)) {
-                placeOrder(update.tickerId, update.price, 100, 'A');
-            }
-        }
-
-        void onExecution(const MarketUpdate& update) override
+        void onExecutionImpl(const MarketUpdate& update)
         {
             double tradeCost = update.price * update.volume;
 
             if (update.side == 'B') {
-                balance -= tradeCost;
-                holdings[update.tickerId] += update.volume;
+                this->balance -= tradeCost;
+                this->holdings[update.tickerId] += update.volume;
             } else if (update.side == 'A') {
-                balance += tradeCost;
-                holdings[update.tickerId] -= update.volume;
+                this->balance += tradeCost;
+                this->holdings[update.tickerId] -= update.volume;
             }
 
-            std::cout << "[EXECUTION] Client: " << clientId 
+            std::cout << "[EXECUTION] Client: " << this->clientId 
                     << " | Ticker: " << update.tickerId 
                     << " | Side: " << update.side 
                     << " | Vol: " << update.volume 
-                    << " | New Balance: " << balance << '\n';
+                    << " | New Balance: " << this->balance << '\n';
         }
 
-    private:
-
-        double getTheo(uint32_t tickerId) {
-            return 150.0;
-        }
+    protected:
 
         void placeOrder(uint32_t tickerId, double price, uint32_t volume, char side)
         {
             OrderRequest req;
-            req.clientId = clientId;
+            req.clientId = this->clientId;
             req.clientOrderId = orderIdCounter;
             orderIdCounter++;
             req.tickerId = tickerId;
@@ -64,8 +53,10 @@ namespace Exchange
             req.type = OrderType::Limit;
             req.tif = TimeInForce::GTC;
             req.timestamp = Exchange::getCurrentNanos();
-            sendOrder(req);
+            this->sendOrder(req);
         }
+
+    private:
 
         std::atomic<uint32_t> orderIdCounter{1};
         

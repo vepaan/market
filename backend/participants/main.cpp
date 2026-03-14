@@ -1,4 +1,4 @@
-#include "bot.hpp"
+#include "market-maker.hpp"
 #include "env-config.hpp"
 #include <iostream>
 #include <chrono>
@@ -15,7 +15,7 @@ int main()
         const int gatewayPort = Exchange::getEnvInt("EXCHANGE_GATEWAY_PORT", 8080);
         const int udpPort = Exchange::getEnvInt("UDP_BROADCAST_PORT", 9000);
 
-        Exchange::Bot liquidityBot(1, 100000.0);
+        Exchange::MarketMakerBot liquidityBot(1, 100000.0);
 
         // Set up UDP multicast listener BEFORE connecting to TCP gateway.
         // Connecting to the gateway triggers market seeding, so the bot must

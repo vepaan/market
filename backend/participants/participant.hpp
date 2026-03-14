@@ -12,12 +12,12 @@
 
 namespace Exchange
 {
+    template <typename T>
     class Participant
     {
     public:
 
         Participant(uint32_t id, double balance) : clientId(id), tcp_socket(-1), balance(balance) {}
-        virtual ~Participant() = default;
 
         void connectToGateway(const std::string& ip, int port) 
         {
@@ -65,8 +65,15 @@ namespace Exchange
             }
         }
 
-        virtual void onMarketUpdate(const MarketUpdate& update) = 0;
-        virtual void onExecution(const MarketUpdate& update) = 0;
+        void onMarketUpdate(const MarketUpdate& update)
+        {
+            static_cast<T*>(this)->onMarketUpdateImpl(update);
+        }
+
+        void onExecution(const MarketUpdate& update)
+        {
+            static_cast<T*>(this)->onExecutionImpl(update);
+        }
 
     protected:
 
