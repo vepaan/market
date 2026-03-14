@@ -23,7 +23,8 @@ namespace Exchange
     {
         Limit = 0,
         Market = 1,
-        Iceberg = 2
+        Iceberg = 2,
+        Cancel = 3
     };
 
     enum class TimeInForce : uint8_t

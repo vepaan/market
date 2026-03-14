@@ -29,6 +29,10 @@ namespace Exchange
 
         std::vector<MarketUpdate> processOrder(const OrderRequest& req)
         {
+            if (req.type == OrderType::Cancel) {
+                return cancelOrder(req);
+            }
+
             if (req.side == 'B') return matchBid(req);
             else return matchAsk(req);
         }
@@ -161,6 +165,54 @@ namespace Exchange
             }
             
             return trades;
+        }
+
+        std::vector<MarketUpdate> cancelOrder(const OrderRequest& req)
+        {
+            std::vector<MarketUpdate> updates;
+
+            if (req.side == 'B') {
+                auto it = bids.find(req.price);
+                if (it != bids.end()) {
+                    updates = removeOrderFromLevel(it->second, req, 'B');
+                    if (it->second.orders.empty()) bids.erase(it);
+                }
+
+            } else if (req.side == 'A') {
+                auto it = asks.find(req.price);
+                if (it != asks.end()) {
+                    updates = removeOrderFromLevel(it->second, req, 'A');
+                    if (it->second.orders.empty()) asks.erase(it);
+                }
+            }
+
+            return updates;
+        }
+
+        // actual removal and udp broadcast
+        std::vector<MarketUpdate> removeOrderFromLevel(PriceLevel& level, const OrderRequest& req, char side)
+        {
+            std::vector<MarketUpdate> updates;
+            auto& orderList = level.orders;
+
+            for (auto it = orderList.begin(); it != orderList.end(); ++it) {
+                if (it->clientId == req.clientId && it->clientOrderId == req.clientOrderId) {
+                    level.totalVolume -= it->volume;
+                    orderList.erase(it);
+
+                    MarketUpdate bookUpdate;
+                    bookUpdate.tickerId = req.tickerId;
+                    bookUpdate.price = req.price;
+                    bookUpdate.volume = level.totalVolume;
+                    bookUpdate.side = side;
+                    bookUpdate.timestamp = Exchange::getCurrentNanos();
+                    updates.push_back(bookUpdate);
+
+                    break;
+                }
+            }
+
+            return updates;
         }
     };
 }

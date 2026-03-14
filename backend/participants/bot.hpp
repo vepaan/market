@@ -39,7 +39,7 @@ namespace Exchange
 
     protected:
 
-        void placeOrder(uint32_t tickerId, double price, uint32_t volume, char side)
+        uint32_t placeOrder(uint32_t tickerId, double price, uint32_t volume, char side)
         {
             OrderRequest req;
             req.clientId = this->clientId;
@@ -50,6 +50,23 @@ namespace Exchange
             req.price = price;
             req.volume = volume;
             req.type = OrderType::Limit;
+            req.tif = TimeInForce::GTC;
+            req.timestamp = Exchange::getCurrentNanos();
+            this->sendOrder(req);
+
+            return req.clientOrderId;
+        }
+
+        void cancelOrder(uint32_t tickerId, double price, char side, uint32_t originalOrderId)
+        {
+            OrderRequest req;
+            req.clientId = this->clientId;
+            req.clientOrderId = originalOrderId;
+            req.tickerId = tickerId;
+            req.side = side;
+            req.price = price;
+            req.volume = 0; // volume doesn't matter for a cancel
+            req.type = OrderType::Cancel;
             req.tif = TimeInForce::GTC;
             req.timestamp = Exchange::getCurrentNanos();
             this->sendOrder(req);
