@@ -1,4 +1,5 @@
 #include "market-maker.hpp"
+#include "directional-bot.hpp"
 #include "env-config.hpp"
 #include <iostream>
 #include <chrono>
@@ -6,6 +7,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <variant>
+#include <vector>
+#include <random>
+
+using namespace Exchange;
+
+using BotVariant = std::variant<MarketMakerBot, DirectionalBot>;
 
 int main()
 {
@@ -15,7 +23,51 @@ int main()
         const int gatewayPort = Exchange::getEnvInt("EXCHANGE_GATEWAY_PORT", 8080);
         const int udpPort = Exchange::getEnvInt("UDP_BROADCAST_PORT", 9000);
 
-        Exchange::MarketMakerBot liquidityBot(1, 100000.0);
+        std::vector<BotVariant> bot_pool;
+
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        std::uniform_real_distribution<double> balance_dist(50000.0, 200000.0);
+        std::uniform_real_distribution<double> risk_dist(0.005, 0.03);
+        std::uniform_real_distribution<double> agg_dist(0.05, 0.50);
+        std::uniform_int_distribution<uint32_t> vol_dist(10, 200);
+
+        uint32_t current_id = 1;
+
+        // spawn 10 market makers
+        for (int i=0; i<10; ++i) {
+            bot_pool.emplace_back(MarketMakerBot(
+                current_id++,
+                balance_dist(rng),
+                risk_dist(rng),
+                0.20,
+                vol_dist(rng)
+            ));
+        }
+
+        // spwan 15 bulls
+        for (int i=0; i<15; ++i) {
+            bot_pool.emplace_back(DirectionalBot(
+                current_id++, 
+                balance_dist(rng), 
+                Bias::BULL, 
+                agg_dist(rng), 
+                vol_dist(rng)
+            ));
+        }
+
+        // spwan 15 bears
+        for (int i=0; i<15; ++i) {
+            bot_pool.emplace_back(DirectionalBot(
+                current_id++, 
+                balance_dist(rng), 
+                Bias::BEAR, 
+                agg_dist(rng), 
+                vol_dist(rng)
+            ));
+        }
+
+        std::cout << "[SYSTEM] Spawned " << bot_pool.size() << " bots. Connecting to Gateway...\n";
 
         // Set up UDP multicast listener BEFORE connecting to TCP gateway.
         // Connecting to the gateway triggers market seeding, so the bot must
@@ -47,11 +99,15 @@ int main()
             throw std::runtime_error("Failed to join multicast group");
         }
 
-        std::cout << "[BOT] Connecting to Gateway at " << gatewayHost << ":" << gatewayPort << "...\n";
+        // connect all bots to gateway
+        for (auto& b: bot_pool) {
+            // visit unwraps variant and calls correct method @ compile time
+            std::visit([&](auto& bot) {
+                bot.connectToGateway(gatewayHost, gatewayPort);
+            }, b);
+        }
 
-        liquidityBot.connectToGateway(gatewayHost, gatewayPort);
-
-        std::cout << "[BOT] Connected! Waiting for Market Seed on port " << udpPort << "...\n";
+        std::cout << "[SYSTEM] All bots connected. Awaiting Market Seed...\n";
 
         Exchange::MarketUpdate update;
 
@@ -61,7 +117,12 @@ int main()
             ssize_t bytes = recvfrom(udp_fd, &update, sizeof(Exchange::MarketUpdate), 0, nullptr, nullptr);
 
             if (bytes == sizeof(Exchange::MarketUpdate)) {
-                liquidityBot.onMarketUpdate(update);
+                // Multicast the tape update to every single bot in the pool
+                for (auto& b : bot_pool) {
+                    std::visit([&](auto& bot) { 
+                        bot.onMarketUpdate(update); 
+                    }, b);
+                }
             }
 
             // sleep so we dont flood console
@@ -69,7 +130,7 @@ int main()
         }
 
     } catch (const std::exception& e) {
-        std::cerr << "[BOT ERROR] " << e.what() << std::endl;
+        std::cerr << "[BOT BUILD ERROR] " << e.what() << std::endl;
         return 1;
     }
 

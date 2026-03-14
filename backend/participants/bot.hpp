@@ -3,7 +3,6 @@
 
 #include "participant.hpp"
 #include <iostream>
-#include <atomic>
 
 namespace Exchange
 {
@@ -58,7 +57,7 @@ namespace Exchange
 
     private:
 
-        std::atomic<uint32_t> orderIdCounter{1};
+        uint32_t orderIdCounter{1};
         
     };
 }
